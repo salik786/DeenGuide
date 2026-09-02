@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { ArrowLeft, ThumbsUp, ThumbsDown, Lock } from "lucide-react";
+import { ArrowLeft, ThumbsUp, ThumbsDown, Lock, Eye, Trash2 } from "lucide-react";
 import { getRecentTranscripts, getAllFeedback, isDbConfigured } from "@/lib/db";
+import { InsightsFilters } from "@/components/InsightsFilters";
+import { now } from "@/lib/storage";
 
 export const metadata = {
   title: "Insights — Deen Guide",
@@ -18,30 +20,44 @@ const STATUS_COLOR: Record<string, string> = {
   declined: "bg-gold-400/20 text-gold-700",
 };
 
-function stripCitationTags(text: string): string {
-  return text
-    .replace(/[ \t]*\[S\d+\]/g, "")
-    .replace(/[ \t]{2,}/g, " ")
-    .trim();
-}
+const PAGE_SIZE = 20;
+const DATE_RANGES: Record<string, number> = {
+  today: 24 * 60 * 60 * 1000,
+  "7d": 7 * 24 * 60 * 60 * 1000,
+  "30d": 30 * 24 * 60 * 60 * 1000,
+};
 
 function formatTime(ts: number): string {
   return new Date(ts).toLocaleString("en-US", {
     month: "short",
     day: "numeric",
+    year: "numeric",
     hour: "numeric",
     minute: "2-digit",
   });
 }
 
-export default async function InsightsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ key?: string }>;
-}) {
-  const { key } = await searchParams;
+type SearchParams = {
+  key?: string;
+  status?: string;
+  vote?: string;
+  date?: string;
+  page?: string;
+};
+
+function buildHref(params: SearchParams, overrides: Partial<SearchParams>) {
+  const merged = { ...params, ...overrides };
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(merged)) {
+    if (v) qs.set(k, v);
+  }
+  return `/insights?${qs.toString()}`;
+}
+
+export default async function InsightsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const params = await searchParams;
   const requiredKey = process.env.INSIGHTS_KEY;
-  const authorized = requiredKey ? key === requiredKey : false;
+  const authorized = requiredKey ? params.key === requiredKey : false;
 
   if (!authorized) {
     return (
@@ -77,14 +93,36 @@ export default async function InsightsPage({
     );
   }
 
-  const [transcripts, feedback] = await Promise.all([getRecentTranscripts(300), getAllFeedback()]);
+  const [transcripts, feedback] = await Promise.all([getRecentTranscripts(500), getAllFeedback()]);
+  const voteById = new Map(feedback.map((f) => [f.messageId, f.vote]));
   const upCount = feedback.filter((f) => f.vote === "up").length;
   const downCount = feedback.filter((f) => f.vote === "down").length;
-  const sortedFeedback = [...feedback].sort((a, b) => b.createdAt - a.createdAt);
+
+  const rows = transcripts.map((t) => ({ ...t, vote: voteById.get(t.id) }));
+
+  const statusFilter = params.status || "all";
+  const voteFilter = params.vote || "all";
+  const dateFilter = params.date || "all";
+  const cutoff = dateFilter !== "all" && DATE_RANGES[dateFilter] ? now() - DATE_RANGES[dateFilter] : null;
+
+  const filtered = rows.filter((r) => {
+    if (statusFilter !== "all" && r.status !== statusFilter) return false;
+    if (voteFilter === "up" && r.vote !== "up") return false;
+    if (voteFilter === "down" && r.vote !== "down") return false;
+    if (voteFilter === "none" && r.vote) return false;
+    if (cutoff !== null && r.createdAt < cutoff) return false;
+    return true;
+  });
+
+  const page = Math.max(1, parseInt(params.page || "1", 10) || 1);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageRows = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const currentUrl = buildHref(params, { page: String(currentPage) });
 
   return (
     <div className="min-h-dvh bg-cream px-4 py-8 sm:px-8">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         <Link href="/chat" className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-800 hover:text-emerald-950">
           <ArrowLeft className="h-4 w-4" />
           Back to chat
@@ -96,71 +134,113 @@ export default async function InsightsPage({
           not just your own browser. Keep this link private.
         </p>
 
-        <section className="mt-8">
-          <div className="mb-3 flex items-center gap-4">
-            <h2 className="font-display text-xl text-emerald-950">Feedback</h2>
-            <span className="flex items-center gap-1 rounded-full bg-emerald-700/10 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-              <ThumbsUp className="h-3.5 w-3.5" /> {upCount}
-            </span>
-            <span className="flex items-center gap-1 rounded-full bg-red-700/10 px-2.5 py-1 text-xs font-semibold text-red-700">
-              <ThumbsDown className="h-3.5 w-3.5" /> {downCount}
-            </span>
+        <div className="mt-4 flex items-center gap-3">
+          <span className="flex items-center gap-1 rounded-full bg-emerald-700/10 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+            <ThumbsUp className="h-3.5 w-3.5" /> {upCount}
+          </span>
+          <span className="flex items-center gap-1 rounded-full bg-red-700/10 px-2.5 py-1 text-xs font-semibold text-red-700">
+            <ThumbsDown className="h-3.5 w-3.5" /> {downCount}
+          </span>
+          <span className="text-xs text-emerald-800/50">
+            {filtered.length} of {rows.length} logged questions match these filters
+          </span>
+        </div>
+
+        <div className="mt-6">
+          <InsightsFilters accessKey={params.key || ""} status={statusFilter} vote={voteFilter} date={dateFilter} />
+        </div>
+
+        {pageRows.length === 0 ? (
+          <div className="rounded-xl border border-emerald-900/10 bg-white px-4 py-6 text-center">
+            <p className="text-sm text-emerald-900/60">
+              {rows.length === 0
+                ? "Nothing logged yet. Questions will appear here as people use the assistant."
+                : "No questions match these filters."}
+            </p>
+            {rows.length > 0 && (
+              <Link href={`/insights?key=${params.key || ""}`} className="mt-2 inline-block text-sm font-medium text-emerald-700 hover:underline">
+                Clear filters
+              </Link>
+            )}
           </div>
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-emerald-900/10 bg-white">
+            <table className="w-full min-w-[720px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-emerald-900/10 bg-emerald-50/60 text-left text-xs uppercase tracking-wide text-emerald-800/60">
+                  <th className="w-36 px-3 py-2.5 font-semibold">Date</th>
+                  <th className="w-28 px-3 py-2.5 font-semibold">Status</th>
+                  <th className="w-16 px-3 py-2.5 font-semibold">Vote</th>
+                  <th className="px-3 py-2.5 font-semibold">Question</th>
+                  <th className="w-24 px-3 py-2.5 font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pageRows.map((r) => (
+                  <tr key={r.id} className="border-b border-emerald-900/5 align-top last:border-b-0">
+                    <td className="whitespace-nowrap px-3 py-3 text-xs text-emerald-800/50">{formatTime(r.createdAt)}</td>
+                    <td className="px-3 py-3">
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_COLOR[r.status]}`}>
+                        {STATUS_LABEL[r.status]}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3">
+                      {r.vote === "up" && <ThumbsUp className="h-4 w-4 text-emerald-700" fill="currentColor" />}
+                      {r.vote === "down" && <ThumbsDown className="h-4 w-4 text-red-700" fill="currentColor" />}
+                      {!r.vote && <span className="text-emerald-800/30">—</span>}
+                    </td>
+                    <td className="px-3 py-3 font-medium text-emerald-950">{r.question}</td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-1">
+                        <Link
+                          href={`/insights/conversation/${r.conversationId}?key=${params.key}&returnTo=${encodeURIComponent(currentUrl)}`}
+                          title="View full conversation"
+                          className="rounded-lg p-1.5 text-emerald-700 transition hover:bg-emerald-700/10"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                        <form action="/api/insights/delete" method="post">
+                          <input type="hidden" name="id" value={r.id} />
+                          <input type="hidden" name="key" value={params.key} />
+                          <input type="hidden" name="returnTo" value={currentUrl} />
+                          <button type="submit" title="Delete this row" className="rounded-lg p-1.5 text-red-600/70 transition hover:bg-red-600/10 hover:text-red-700">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-          {sortedFeedback.length === 0 ? (
-            <p className="text-sm text-emerald-900/50">No feedback yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {sortedFeedback.map((f) => (
-                <div key={f.messageId} className="rounded-xl border border-emerald-900/10 bg-white p-4 text-sm">
-                  <div className="mb-1.5 flex items-center gap-2">
-                    {f.vote === "up" ? (
-                      <ThumbsUp className="h-3.5 w-3.5 text-emerald-700" fill="currentColor" />
-                    ) : (
-                      <ThumbsDown className="h-3.5 w-3.5 text-red-700" fill="currentColor" />
-                    )}
-                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_COLOR[f.status]}`}>
-                      {STATUS_LABEL[f.status]}
-                    </span>
-                    <span className="text-xs text-emerald-800/40">{formatTime(f.createdAt)}</span>
-                  </div>
-                  <p className="font-medium text-emerald-950">{f.question}</p>
-                  <p className="mt-1 line-clamp-3 text-emerald-900/70">{stripCitationTags(f.answer)}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className="mt-10">
-          <h2 className="mb-3 font-display text-xl text-emerald-950">
-            All questions <span className="text-sm font-sans font-normal text-emerald-800/50">(most recent {transcripts.length})</span>
-          </h2>
-          {transcripts.length === 0 ? (
-            <p className="text-sm text-emerald-900/50">Nothing logged yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {transcripts.map((t) => (
-                <div key={t.id} className="rounded-xl border border-emerald-900/10 bg-white p-4 text-sm">
-                  <div className="mb-1.5 flex items-center gap-2">
-                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_COLOR[t.status]}`}>
-                      {STATUS_LABEL[t.status]}
-                    </span>
-                    {t.citationCount > 0 && (
-                      <span className="text-xs text-emerald-800/40">{t.citationCount} citation{t.citationCount > 1 ? "s" : ""}</span>
-                    )}
-                    {t.webSourceCount > 0 && (
-                      <span className="text-xs text-amber-700/60">{t.webSourceCount} web source{t.webSourceCount > 1 ? "s" : ""}</span>
-                    )}
-                    <span className="text-xs text-emerald-800/40">{formatTime(t.createdAt)}</span>
-                  </div>
-                  <p className="font-medium text-emerald-950">{t.question}</p>
-                  <p className="mt-1 line-clamp-2 text-emerald-900/70">{stripCitationTags(t.answer)}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+        {totalPages > 1 && (
+          <div className="mt-4 flex items-center justify-between text-sm">
+            <Link
+              href={buildHref(params, { page: String(Math.max(1, currentPage - 1)) })}
+              aria-disabled={currentPage <= 1}
+              className={`rounded-lg border border-emerald-900/15 px-3 py-1.5 ${
+                currentPage <= 1 ? "pointer-events-none opacity-40" : "text-emerald-800 hover:bg-emerald-50"
+              }`}
+            >
+              ← Previous
+            </Link>
+            <span className="text-emerald-800/60">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Link
+              href={buildHref(params, { page: String(Math.min(totalPages, currentPage + 1)) })}
+              aria-disabled={currentPage >= totalPages}
+              className={`rounded-lg border border-emerald-900/15 px-3 py-1.5 ${
+                currentPage >= totalPages ? "pointer-events-none opacity-40" : "text-emerald-800 hover:bg-emerald-50"
+              }`}
+            >
+              Next →
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

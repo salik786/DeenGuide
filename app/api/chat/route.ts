@@ -97,8 +97,12 @@ export async function POST(req: NextRequest) {
         question,
         answer: result.text,
         status: result.status,
-        citationCount: result.citations.length,
-        webSourceCount: result.webSources.length,
+        citations: result.citations.map((c) => ({
+          reference: c.source.reference,
+          collection: c.source.collection,
+          url: c.source.url,
+        })),
+        webSources: result.webSources,
         createdAt: Date.now(),
       }),
     );

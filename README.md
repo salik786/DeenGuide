@@ -111,10 +111,10 @@ this is the page to send a scholar for review.
 
 ## Insights (transcript log + feedback)
 
-Every question sent to `/api/chat` is logged server-side (question, answer, status, citation
-counts), and every 👍/👎 tap under an answer is saved too — both in Upstash Redis (the service
-Vercel now sells as "Vercel KV"), so you can see what other people ask/rate even when they're on
-a different device than you.
+Every question sent to `/api/chat` is logged server-side (question, answer, status, citations,
+web sources), and every 👍/👎 tap under an answer is saved too — both in Upstash Redis (the
+service Vercel now sells as "Vercel KV"), so you can see what other people ask/rate even when
+they're on a different device than you.
 
 **Setup:** in your Vercel project, go to Storage → Marketplace → add an Upstash Redis database,
 then copy the REST URL and token it gives you into `.env.local` as `UPSTASH_REDIS_REST_URL` /
@@ -125,7 +125,10 @@ vars, the app still works completely normally — logging and feedback just sile
 
 **Viewing it:** open `/insights?key=<your INSIGHTS_KEY>`. This is not linked from anywhere in
 the app UI on purpose — treat the URL like a password and don't share it publicly, since it
-shows real questions people asked.
+shows real questions people asked. The page is a filterable, paginated table (by status, by
+👍/👎, by date range); each row has a 👁 to view that question in the context of its full
+conversation (`/insights/conversation/[id]`, with the complete answer text and sources), and a
+🗑 to permanently delete that row (both its transcript entry and any feedback on it).
 
 ## How the conversation UI works
 
@@ -177,7 +180,9 @@ app/api/voice/speak        OpenAI TTS text-to-speech
 app/home/                  landing page
 app/chat/                  the conversation shell (sidebar + chat view)
 app/scholar-review/        read-only page listing every verified-tier source
-app/insights/              key-gated page: every question asked + every feedback vote
+app/insights/              key-gated, filterable/paginated table of every question + vote
+app/insights/conversation/ view one full conversation thread (from an Insights row's 👁)
+app/api/insights/delete    deletes one Insights row (transcript + its feedback)
 components/                UI: sidebar, chat view, message bubbles, citations, mic button
 scripts/                   dev-only tools: verify-questions.mjs, quality-check.mjs
 ```

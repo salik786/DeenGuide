@@ -34,7 +34,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${manrope.variable} ${amiri.variable} ${fraunces.variable} font-sans antialiased`}>
+      <body
+        className={`${manrope.variable} ${amiri.variable} ${fraunces.variable} font-sans antialiased`}
+        suppressHydrationWarning
+      >
         {children}
       </body>
     </html>

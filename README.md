@@ -155,6 +155,17 @@ conversation (`/insights/conversation/[id]`, with the complete answer text and s
   (all modern browsers). It also requires HTTPS (or `localhost`) — browsers block mic access on
   plain HTTP.
 
+## Cost: prompt caching
+
+The system prompt (topic list + full corpus + all the rules) is identical on every single
+request — it's rebuilt from the same static JSON every time, never varies per user or message.
+`app/api/chat/route.ts` marks it with `cache_control: { type: "ephemeral" }`, so Anthropic
+caches that whole block (currently ~12,800 tokens) and reuses it across requests at roughly
+1/10th the cost, instead of reprocessing it from scratch on every chat turn. The server logs
+`[cache] read=... write=... uncached=... output=...` for every request — `read` should be
+nonzero (and `write` zero) on any request that lands within ~5 minutes of a prior one, which is
+the normal case once the app has any real traffic.
+
 ## Deploying for the event
 
 Any Node.js host that supports Next.js works (Vercel is the simplest — `vercel deploy` after

@@ -59,7 +59,13 @@ export async function POST(req: NextRequest) {
     const response = await anthropic.messages.create({
       model: MODEL,
       max_tokens: 1024,
-      system: systemPrompt,
+      // The topic list + corpus + rules never change between requests, so
+      // this is an ideal prompt-caching candidate: mark the end of this
+      // static block and Anthropic caches everything up to and including
+      // it (tools + system), reusing it across requests at ~1/10th the
+      // input-token cost instead of reprocessing it from scratch every
+      // single chat turn.
+      system: [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }],
       messages: trimmedHistory.map((m) => ({ role: m.role, content: m.content })),
       tools: [
         {
@@ -70,6 +76,14 @@ export async function POST(req: NextRequest) {
         },
       ],
     });
+
+    if (response.usage) {
+      console.log(
+        `[cache] read=${response.usage.cache_read_input_tokens ?? 0} ` +
+          `write=${response.usage.cache_creation_input_tokens ?? 0} ` +
+          `uncached=${response.usage.input_tokens} output=${response.usage.output_tokens}`,
+      );
+    }
 
     const rawText = response.content
       .filter((block): block is Anthropic.TextBlock => block.type === "text")

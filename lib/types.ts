@@ -30,12 +30,35 @@ export interface Citation {
   source: SourceEntry;
 }
 
+/** A live web search result from one of the allowlisted Islamic knowledge
+ * sites — used for "unverified" answers, distinct from our hand-vetted
+ * static `SourceEntry` corpus used for "verified" answers. */
+export interface WebSource {
+  url: string;
+  title?: string;
+}
+
+/**
+ * verified: answer is fully grounded in our hand-curated static corpus.
+ * unverified: a real Islamic question, answered from Claude's general
+ *   knowledge (optionally aided by a live web search of a few trusted
+ *   sites) because our static corpus doesn't cover it — must be visually
+ *   flagged and never treated as equivalent to a verified answer.
+ * declined: not answered at all (off-topic, a personal calculation,
+ *   or an attempt to bypass the rules).
+ */
+export type AnswerStatus = "verified" | "unverified" | "declined";
+
+export type Vote = "up" | "down";
+
 export interface ChatMessage {
   id: string;
   role: ChatRole;
   content: string;
   citations?: Citation[];
-  outOfScope?: boolean;
+  webSources?: WebSource[];
+  status?: AnswerStatus;
+  vote?: Vote;
   createdAt: number;
 }
 

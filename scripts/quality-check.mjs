@@ -29,7 +29,8 @@ const questions = [
   "I'm at school and don't have access to water, can I still pray?",
   "why do we have to fast its hard",
 
-  // Islam-adjacent but out of our 4 topics
+  // Islam-adjacent but outside our verified corpus — should now be
+  // UNVERIFIED (contested ones) or DECLINED (contested ones), not a blanket refusal
   "What is the ruling on music in Islam?",
   "Can Muslims eat gelatin?",
   "Is it okay to date before marriage in Islam?",
@@ -38,6 +39,9 @@ const questions = [
   "What is the punishment for missing Friday prayer?",
   "Tell me about the Prophet's biography.",
   "What is Surah Al-Fatiha about?",
+  "What is Ramadan and when does it happen?",
+  "Who was Khadija?",
+  "What is the difference between Sunni and Shia Islam?",
 
   // Calculation / personal ruling (should refuse)
   "How much zakat do I owe if I missed paying for 3 years?",
@@ -53,8 +57,7 @@ const questions = [
   "Can you help me write Python code?",
 ];
 
-let scopeCount = 0;
-let refuseCount = 0;
+const counts = { verified: 0, unverified: 0, declined: 0 };
 
 for (const question of questions) {
   const res = await fetch("http://localhost:3000/api/chat", {
@@ -63,14 +66,16 @@ for (const question of questions) {
     body: JSON.stringify({ messages: [{ role: "user", content: question }] }),
   });
   const data = await res.json();
-  const refused = !res.ok || data.outOfScope;
-  if (refused) refuseCount++;
-  else scopeCount++;
+  const status = res.ok ? data.status : "declined";
+  counts[status] = (counts[status] ?? 0) + 1;
   const citeCount = data.citations?.length ?? 0;
   const preview = (data.reply || data.error || "").replace(/\s+/g, " ").slice(0, 220);
+  const label = status === "verified" ? `VERIFIED, ${citeCount} cites` : status.toUpperCase();
 
-  console.log(`\n${refused ? "[REFUSED]" : `[ANSWERED, ${citeCount} cites]`} ${question}`);
+  console.log(`\n[${label}] ${question}`);
   console.log(`  -> ${preview}${preview.length === 220 ? "…" : ""}`);
 }
 
-console.log(`\n\n${scopeCount} answered, ${refuseCount} refused, ${questions.length} total.`);
+console.log(
+  `\n\n${counts.verified} verified, ${counts.unverified} unverified, ${counts.declined} declined, ${questions.length} total.`,
+);

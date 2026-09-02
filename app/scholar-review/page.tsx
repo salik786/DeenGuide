@@ -14,7 +14,7 @@ export default function ScholarReviewPage() {
     <div className="min-h-dvh bg-cream px-4 py-8 sm:px-8">
       <div className="mx-auto max-w-3xl">
         <Link
-          href="/"
+          href="/chat"
           className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-800 hover:text-emerald-950"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -23,10 +23,14 @@ export default function ScholarReviewPage() {
 
         <h1 className="font-display text-3xl text-emerald-950">Scholar Review</h1>
         <p className="mt-2 max-w-2xl text-sm text-emerald-900/70">
-          This is the complete, fixed set of sources the assistant is allowed to draw from — one
-          list per topic. The assistant cannot answer with anything outside of what is quoted
-          here verbatim. Please review each entry for accuracy before this goes live, and flag
-          anything that needs correcting, more nuance, or removal.
+          The assistant now answers in two tiers. Answers marked <strong>Verified</strong> use
+          only the hand-picked, verbatim quotes listed below, one list per topic, and cite the
+          exact entry used. Answers marked <strong>Not verified</strong> come from Claude&rsquo;s
+          general knowledge (optionally checking a handful of trusted sites live: Sunnah.com,
+          Quran.com, IslamQA.info, IslamWeb.net, SeekersGuidance.org, Yaqeen Institute) when this
+          list doesn&rsquo;t cover the question — those are flagged in the UI and never shown as
+          equivalent to a verified answer. Please review every entry below for accuracy before
+          this goes live, and flag anything that needs correcting, more nuance, or removal.
         </p>
 
         <div className="mt-8 space-y-10">

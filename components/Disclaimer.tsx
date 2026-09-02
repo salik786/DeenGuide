@@ -9,11 +9,12 @@ export function Disclaimer({ compact = false }: { compact?: boolean }) {
     >
       <ShieldCheck className={compact ? "h-4 w-4 mt-0.5 shrink-0" : "h-5 w-5 mt-0.5 shrink-0"} />
       <p>
-        This assistant only answers from{" "}
-        <span className="font-semibold">Sunnah.com (Sahih al-Bukhari)</span> and{" "}
-        <span className="font-semibold">Quran.com</span> for a fixed set of topics, and every
-        answer shows its exact source. It is not a scholar, so for rulings on your personal
-        situation, please ask an imam or volunteer scholar at the event.
+        Answers marked <span className="font-semibold text-emerald-700">Verified</span> are
+        grounded in <span className="font-semibold">Sunnah.com (Sahih al-Bukhari)</span> and{" "}
+        <span className="font-semibold">Quran.com</span>, with the exact source shown. Anything
+        marked <span className="font-semibold text-amber-700">Not verified</span> is general
+        information, not checked against those sources. This assistant is not a scholar, so for
+        rulings on your personal situation, please ask an imam or volunteer scholar at the event.
       </p>
     </div>
   );

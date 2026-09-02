@@ -58,9 +58,9 @@ export default function HomePage() {
           <DateBadge className="mt-3 text-xs tracking-wide text-emerald-800/50" />
           <h1 className="mt-4 font-display text-3xl italic text-emerald-950 sm:text-4xl">Welcome to Deen Guide</h1>
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-emerald-900/70">
-            One assistant, {TOPICS.length} approved topics. Ask anything within them in a
-            single ongoing conversation, and every answer is grounded in Sunnah.com and
-            Quran.com with the exact source shown.
+            Ask any Islamic question in a single ongoing conversation. Answers grounded in
+            Sunnah.com and Quran.com are marked Verified with the exact source shown; anything
+            else is clearly marked as not verified.
           </p>
         </div>
 

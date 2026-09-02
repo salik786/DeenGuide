@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Send, Menu, Sparkles } from "lucide-react";
-import type { Conversation, ChatMessage } from "@/lib/types";
-import { TOPICS } from "@/lib/corpus";
+import type { Conversation, ChatMessage, Vote } from "@/lib/types";
 import { MessageBubble } from "@/components/MessageBubble";
 import { MicButton } from "@/components/MicButton";
 import { Disclaimer } from "@/components/Disclaimer";
@@ -66,6 +65,7 @@ export function ChatView({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          conversationId: conversation.id,
           messages: withUser.messages.map((m) => ({ role: m.role, content: m.content })),
         }),
       });
@@ -73,11 +73,12 @@ export function ChatView({
       const data = await res.json();
 
       const assistantMessage: ChatMessage = {
-        id: newMessageId(),
+        id: res.ok && data.id ? data.id : newMessageId(),
         role: "assistant",
         content: res.ok ? data.reply : data.error || "Something went wrong. Please try again.",
         citations: res.ok ? data.citations : [],
-        outOfScope: res.ok ? data.outOfScope : true,
+        webSources: res.ok ? data.webSources : [],
+        status: res.ok ? data.status : "declined",
         createdAt: now(),
       };
 
@@ -91,7 +92,7 @@ export function ChatView({
         id: newMessageId(),
         role: "assistant",
         content: "I couldn't reach the assistant. Please check your connection and try again.",
-        outOfScope: true,
+        status: "declined",
         createdAt: now(),
       };
       onUpdate({
@@ -101,6 +102,28 @@ export function ChatView({
       });
     } finally {
       setSending(false);
+    }
+  }
+
+  function handleVote(message: ChatMessage, vote: Vote) {
+    const nextVote = message.vote === vote ? undefined : vote; // tap again to un-vote
+    onUpdate({
+      ...conversation,
+      messages: conversation.messages.map((m) => (m.id === message.id ? { ...m, vote: nextVote } : m)),
+    });
+    if (nextVote) {
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messageId: message.id,
+          conversationId: conversation.id,
+          question: conversation.messages[conversation.messages.indexOf(message) - 1]?.content ?? "",
+          answer: message.content,
+          status: message.status,
+          vote: nextVote,
+        }),
+      }).catch(() => {});
     }
   }
 
@@ -119,7 +142,7 @@ export function ChatView({
               Deen Guide
             </h1>
             <p className="truncate text-xs text-emerald-800/60">
-              Ask about any of the {TOPICS.length} approved topics, with sources cited every time
+              Verified answers are cited; anything else is clearly marked
             </p>
           </div>
         </div>
@@ -133,14 +156,19 @@ export function ChatView({
               <Disclaimer />
               <div>
                 <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-emerald-800/60">
-                  Try asking
+                  Frequently asked questions
                 </p>
                 <SuggestionChips onSelect={sendMessage} className="stagger-in flex flex-wrap gap-2" />
               </div>
             </div>
           )}
           {conversation.messages.map((m) => (
-            <MessageBubble key={m.id} message={m} onSuggestedQuestion={sendMessage} />
+            <MessageBubble
+              key={m.id}
+              message={m}
+              onSuggestedQuestion={sendMessage}
+              onVote={m.role === "assistant" ? (vote) => handleVote(m, vote) : undefined}
+            />
           ))}
           {sending && (
             <div className="msg-in flex items-center gap-2.5 text-sm text-emerald-800/60">

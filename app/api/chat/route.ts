@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { after } from "next/server";
+import { randomUUID } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
 import { TOPICS, getFullCorpus } from "@/lib/corpus";
-import { buildSystemPrompt, OUT_OF_SCOPE_MESSAGE } from "@/lib/systemPrompt";
+import { buildSystemPrompt, DECLINED_MESSAGE, TRUSTED_SEARCH_DOMAINS } from "@/lib/systemPrompt";
 import { applyGuardrails } from "@/lib/guardrails";
+import { logTranscript } from "@/lib/db";
+import type { WebSource } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -15,23 +19,26 @@ interface IncomingMessage {
 }
 
 export async function POST(req: NextRequest) {
-  let body: { messages?: IncomingMessage[] };
+  let body: { messages?: IncomingMessage[]; conversationId?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  const { messages } = body;
+  const { messages, conversationId } = body;
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: "Missing messages." }, { status: 400 });
   }
 
+  const question = messages[messages.length - 1]?.content ?? "";
+  const messageId = randomUUID();
+
   const sources = getFullCorpus();
   if (sources.length === 0) {
     return NextResponse.json(
-      { reply: OUT_OF_SCOPE_MESSAGE, citations: [], outOfScope: true },
+      { id: messageId, reply: DECLINED_MESSAGE, citations: [], webSources: [], status: "declined" },
       { status: 200 },
     );
   }
@@ -51,9 +58,17 @@ export async function POST(req: NextRequest) {
   try {
     const response = await anthropic.messages.create({
       model: MODEL,
-      max_tokens: 700,
+      max_tokens: 1024,
       system: systemPrompt,
       messages: trimmedHistory.map((m) => ({ role: m.role, content: m.content })),
+      tools: [
+        {
+          type: "web_search_20260209",
+          name: "web_search",
+          allowed_domains: TRUSTED_SEARCH_DOMAINS,
+          max_uses: 2,
+        },
+      ],
     });
 
     const rawText = response.content
@@ -62,12 +77,38 @@ export async function POST(req: NextRequest) {
       .join("\n")
       .trim();
 
-    const result = applyGuardrails(rawText, sources);
+    const webResults: WebSource[] = [];
+    for (const block of response.content) {
+      if (block.type === "web_search_tool_result" && Array.isArray(block.content)) {
+        for (const item of block.content) {
+          webResults.push({ url: item.url, title: item.title });
+        }
+      }
+    }
+
+    const result = applyGuardrails(rawText, sources, webResults);
+
+    // Runs after the response is sent — doesn't add latency, but still
+    // completes reliably server-side (unlike a bare unawaited promise).
+    after(() =>
+      logTranscript({
+        id: messageId,
+        conversationId: conversationId || "unknown",
+        question,
+        answer: result.text,
+        status: result.status,
+        citationCount: result.citations.length,
+        webSourceCount: result.webSources.length,
+        createdAt: Date.now(),
+      }),
+    );
 
     return NextResponse.json({
+      id: messageId,
       reply: result.text,
       citations: result.citations.map((c) => ({ tag: c.tag, source: c.source })),
-      outOfScope: result.outOfScope,
+      webSources: result.webSources,
+      status: result.status,
     });
   } catch (err) {
     console.error("Anthropic API error:", err);

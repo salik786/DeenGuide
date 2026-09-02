@@ -1,6 +1,7 @@
 // Sanity check: every sample question in data/topics.json should get a real,
-// cited (non-refused) answer from the live API. Run this after adding a
-// question to topics.json or changing the corpus/system prompt.
+// VERIFIED (cited) answer from the live API — not unverified, not declined.
+// Run this after adding a question to topics.json or changing the
+// corpus/system prompt.
 //
 //   node scripts/verify-questions.mjs
 //
@@ -23,8 +24,8 @@ for (const { topic, question } of questions) {
     body: JSON.stringify({ messages: [{ role: "user", content: question }] }),
   });
   const data = await res.json();
-  const ok = res.ok && !data.outOfScope && (data.citations?.length ?? 0) > 0;
-  console.log(`${ok ? "PASS" : "FAIL"}  [${topic}] ${question}`);
+  const ok = res.ok && data.status === "verified" && (data.citations?.length ?? 0) > 0;
+  console.log(`${ok ? "PASS" : "FAIL"}  [${topic}] ${question} (status: ${data.status})`);
   if (!ok) {
     failures++;
     console.log(`      -> ${data.reply ?? data.error}`);

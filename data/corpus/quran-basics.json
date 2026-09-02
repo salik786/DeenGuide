@@ -1,0 +1,35 @@
+[
+  {
+    "id": "quran-1",
+    "type": "quran",
+    "sourceSite": "Quran.com",
+    "collection": "Surah Al-Fatiha (1) — \"The Opener\"",
+    "reference": "Quran 1:1-7",
+    "translation": "1. In the name of Allah, the Entirely Merciful, the Especially Merciful. 2. [All] praise is [due] to Allah, Lord of the worlds - 3. The Entirely Merciful, the Especially Merciful, 4. Sovereign of the Day of Recompense. 5. It is You we worship and You we ask for help. 6. Guide us to the straight path - 7. The path of those upon whom You have bestowed favor, not of those who have earned [Your] anger or of those who are astray.",
+    "translator": "Saheeh International",
+    "url": "https://quran.com/1"
+  },
+  {
+    "id": "quran-96-1-5",
+    "type": "quran",
+    "sourceSite": "Quran.com",
+    "collection": "Surah Al-Alaq (96)",
+    "reference": "Quran 96:1-5",
+    "translation": "Recite in the name of your Lord who created - Created man from a clinging substance. Recite, and your Lord is the most Generous - Who taught by the pen - Taught man that which he knew not.",
+    "translator": "Saheeh International",
+    "url": "https://quran.com/96"
+  },
+  {
+    "id": "bukhari-3",
+    "type": "hadith",
+    "sourceSite": "Sunnah.com",
+    "collection": "Sahih al-Bukhari",
+    "reference": "Sahih al-Bukhari 3",
+    "inBookReference": "Book 1, Hadith 3",
+    "narrator": "'Aisha (mother of the believers)",
+    "arabic": "أَوَّلُ مَا بُدِئَ بِهِ رَسُولُ اللَّهِ صلى الله عليه وسلم مِنَ الْوَحْىِ الرُّؤْيَا الصَّالِحَةُ فِي النَّوْمِ",
+    "translation": "The commencement of the Divine Inspiration to Allah's Messenger (ﷺ) was in the form of good dreams which came true like bright daylight... The angel came to him in the cave of Hira and asked him to read. After being pressed three times, the angel said: 'Read in the name of your Lord, who has created (all that exists), created man from a clot. Read! And your Lord is the Most Generous.'",
+    "translator": "Sunnah.com (Bukhari collection translation)",
+    "url": "https://sunnah.com/bukhari:3"
+  }
+]

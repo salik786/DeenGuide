@@ -1,0 +1,50 @@
+[
+  {
+    "id": "five-pillars",
+    "name": "The Five Pillars",
+    "shortName": "Five Pillars",
+    "description": "Shahada, Salah, Zakat, Sawm, and Hajj: the five foundations of Islam.",
+    "icon": "Landmark",
+    "sampleQuestions": [
+      "What are the five pillars of Islam?",
+      "What is the Shahada and why does it matter?",
+      "Why do Muslims give Zakat?"
+    ]
+  },
+  {
+    "id": "prayer-wudu",
+    "name": "Prayer & Wudu",
+    "shortName": "Prayer & Wudu",
+    "description": "How to perform ablution (wudu) and the basics of Salah, including what to do in common situations.",
+    "icon": "Droplets",
+    "sampleQuestions": [
+      "How do I perform wudu step by step?",
+      "What if there's no water available for wudu?",
+      "I forgot to pray on time — what should I do now?"
+    ]
+  },
+  {
+    "id": "ramadan-fasting",
+    "name": "Ramadan & Fasting",
+    "shortName": "Ramadan & Fasting",
+    "description": "The purpose and blessings of fasting in Ramadan, including what to do in common situations.",
+    "icon": "Moon",
+    "sampleQuestions": [
+      "Why do Muslims fast in Ramadan?",
+      "What if I'm sick or traveling during Ramadan?",
+      "Can I fast voluntarily outside of Ramadan too?"
+    ]
+  },
+  {
+    "id": "akhlaq-manners",
+    "name": "Manners & Akhlaq",
+    "shortName": "Manners & Akhlaq",
+    "description": "Kindness, honesty, and good character taught by the Prophet ﷺ. Great for kids.",
+    "icon": "Heart",
+    "sampleQuestions": [
+      "How should I treat my parents?",
+      "What did the Prophet ﷺ teach about being kind to neighbors?",
+      "Does Islam say anything about kindness to animals?"
+    ]
+  }
+]

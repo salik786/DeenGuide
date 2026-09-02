@@ -1,0 +1,55 @@
+[
+  {
+    "id": "bukhari-8",
+    "type": "hadith",
+    "sourceSite": "Sunnah.com",
+    "collection": "Sahih al-Bukhari",
+    "reference": "Sahih al-Bukhari 8",
+    "inBookReference": "Book 2, Hadith 1",
+    "narrator": "Ibn 'Umar",
+    "arabic": "بُنِيَ الإِسْلاَمُ عَلَى خَمْسٍ شَهَادَةِ أَنْ لاَ إِلَهَ إِلاَّ اللَّهُ وَأَنَّ مُحَمَّدًا رَسُولُ اللَّهِ، وَإِقَامِ الصَّلاَةِ، وَإِيتَاءِ الزَّكَاةِ، وَالْحَجِّ، وَصَوْمِ رَمَضَانَ",
+    "translation": "Allah's Messenger (ﷺ) said: Islam is based on (the following) five (principles): 1. To testify that none has the right to be worshipped but Allah and Muhammad is Allah's Messenger (ﷺ). 2. To offer the (compulsory congregational) prayers dutifully and perfectly. 3. To pay Zakat (i.e. obligatory charity). 4. To perform Hajj (i.e. Pilgrimage to Mecca). 5. To observe fast during the month of Ramadan.",
+    "translator": "Sunnah.com (Bukhari collection translation)",
+    "url": "https://sunnah.com/bukhari:8"
+  },
+  {
+    "id": "quran-112",
+    "type": "quran",
+    "sourceSite": "Quran.com",
+    "collection": "Surah Al-Ikhlas (112)",
+    "reference": "Quran 112:1-4",
+    "translation": "Say, \"He is Allah, [who is] One, Allah, the Eternal Refuge. He neither begets nor is born, Nor is there to Him any equivalent.\"",
+    "translator": "Saheeh International",
+    "url": "https://quran.com/112"
+  },
+  {
+    "id": "quran-2-110",
+    "type": "quran",
+    "sourceSite": "Quran.com",
+    "collection": "Surah Al-Baqarah (2)",
+    "reference": "Quran 2:110",
+    "translation": "And establish prayer and give zakah, and whatever good you put forward for yourselves - you will find it with Allah. Indeed Allah, of what you do, is Seeing.",
+    "translator": "Saheeh International",
+    "url": "https://quran.com/2/110"
+  },
+  {
+    "id": "quran-3-97",
+    "type": "quran",
+    "sourceSite": "Quran.com",
+    "collection": "Surah Aal-i-Imran (3)",
+    "reference": "Quran 3:97",
+    "translation": "In it are clear signs [such as] the standing place of Abraham. And whoever enters it [i.e., the Haram] shall be safe. And [due] to Allah from the people is a pilgrimage to the House - for whoever is able to find thereto a way. But whoever disbelieves [i.e., refuses] - then indeed, Allah is free from need of the worlds.",
+    "translator": "Saheeh International",
+    "url": "https://quran.com/3/97"
+  },
+  {
+    "id": "quran-2-183",
+    "type": "quran",
+    "sourceSite": "Quran.com",
+    "collection": "Surah Al-Baqarah (2)",
+    "reference": "Quran 2:183",
+    "translation": "O you who have believed, decreed upon you is fasting as it was decreed upon those before you that you may become righteous.",
+    "translator": "Saheeh International",
+    "url": "https://quran.com/2/183"
+  }
+]

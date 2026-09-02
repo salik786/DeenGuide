@@ -1,0 +1,61 @@
+[
+  {
+    "id": "bukhari-135",
+    "type": "hadith",
+    "sourceSite": "Sunnah.com",
+    "collection": "Sahih al-Bukhari",
+    "reference": "Sahih al-Bukhari 135",
+    "inBookReference": "Book 4, Hadith 1",
+    "narrator": "Abu Huraira",
+    "arabic": "لاَ تُقْبَلُ صَلاَةُ مَنْ أَحْدَثَ حَتَّى يَتَوَضَّأَ",
+    "translation": "Allah's Messenger (ﷺ) said, \"The prayer of a person who does Hadath (passes urine, stool or wind) is not accepted till he performs the ablution.\" A person from Hadaramout asked Abu Huraira, \"What is 'Hadath'?\" Abu Huraira replied, \"'Hadath' means the passing of wind.\"",
+    "translator": "Sunnah.com (Bukhari collection translation)",
+    "url": "https://sunnah.com/bukhari:135"
+  },
+  {
+    "id": "bukhari-159",
+    "type": "hadith",
+    "sourceSite": "Sunnah.com",
+    "collection": "Sahih al-Bukhari",
+    "reference": "Sahih al-Bukhari 159",
+    "inBookReference": "Book 4, Hadith 25",
+    "narrator": "Humran (the freed slave of 'Uthman)",
+    "arabic": "فَأَفْرَغَ عَلَى كَفَّيْهِ ثَلاَثَ مِرَارٍ فَغَسَلَهُمَا، ثُمَّ أَدْخَلَ يَمِينَهُ فِي الإِنَاءِ فَمَضْمَضَ، وَاسْتَنْشَقَ، ثُمَّ غَسَلَ وَجْهَهُ ثَلاَثًا، وَيَدَيْهِ إِلَى الْمِرْفَقَيْنِ ثَلاَثَ مِرَارٍ، ثُمَّ مَسَحَ بِرَأْسِهِ، ثُمَّ غَسَلَ رِجْلَيْهِ ثَلاَثَ مِرَارٍ إِلَى الْكَعْبَيْنِ",
+    "translation": "I saw 'Uthman bin 'Affan asking for a tumbler of water (and when it was brought) he poured water over his hands and washed them thrice, and then put his right hand in the water container and rinsed his mouth, washed his nose by putting water in it and then blowing it out, then he washed his face and forearms up to the elbows thrice, passed his wet hands over his head, and washed his feet up to the ankles thrice. Then he said, \"Allah's Messenger (ﷺ) said: 'If anyone performs ablution like that of mine and offers a two-rak'at prayer during which he does not think of anything else (not related to the present prayer) then his past sins will be forgiven.'\"",
+    "translator": "Sunnah.com (Bukhari collection translation)",
+    "url": "https://sunnah.com/bukhari:159"
+  },
+  {
+    "id": "bukhari-597",
+    "type": "hadith",
+    "sourceSite": "Sunnah.com",
+    "collection": "Sahih al-Bukhari",
+    "reference": "Sahih al-Bukhari 597",
+    "inBookReference": "Book 9, Hadith 72",
+    "narrator": "Anas ibn Malik",
+    "arabic": "مَنْ نَسِيَ صَلاَةً فَلْيُصَلِّ إِذَا ذَكَرَهَا، لاَ كَفَّارَةَ لَهَا إِلاَّ ذَلِكَ",
+    "translation": "The Prophet (ﷺ) said, \"If anyone forgets a prayer he should pray that prayer when he remembers it. There is no expiation except to pray the same.\" Then he recited: \"Establish prayer for My (i.e. Allah's) remembrance.\" (Quran 20:14).",
+    "translator": "Sunnah.com (Bukhari collection translation)",
+    "url": "https://sunnah.com/bukhari:597"
+  },
+  {
+    "id": "quran-2-43",
+    "type": "quran",
+    "sourceSite": "Quran.com",
+    "collection": "Surah Al-Baqarah (2)",
+    "reference": "Quran 2:43",
+    "translation": "And establish prayer and give zakah and bow with those who bow [in worship and obedience].",
+    "translator": "Saheeh International",
+    "url": "https://quran.com/2/43"
+  },
+  {
+    "id": "quran-5-6",
+    "type": "quran",
+    "sourceSite": "Quran.com",
+    "collection": "Surah Al-Ma'idah (5)",
+    "reference": "Quran 5:6",
+    "translation": "O you who have believed, when you rise to [perform] prayer, wash your faces and your forearms to the elbows and wipe over your heads and wash your feet to the ankles. And if you are in a state of janabah (ceremonial impurity), then purify yourselves (bathe). But if you are ill or on a journey or one of you comes from the place of relieving himself or you have contacted women and do not find water, then seek clean earth and wipe over your faces and hands with it. Allah does not intend to make difficulty for you, but He intends to purify you and complete His favor upon you that you may be grateful.",
+    "translator": "Saheeh International",
+    "url": "https://quran.com/5/6"
+  }
+]

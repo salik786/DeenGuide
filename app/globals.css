@@ -1,0 +1,265 @@
+@import "tailwindcss";
+
+:root {
+  --color-cream: #faf6ec;
+  --color-cream-deep: #f1e9d4;
+  --color-ink: #1f2a24;
+  --color-emerald-950: #0a2820;
+  --color-emerald-900: #0f3d30;
+  --color-emerald-800: #145a44;
+  --color-emerald-700: #1a6e53;
+  --color-emerald-600: #1f8563;
+  --color-emerald-100: #dcefe4;
+  --color-emerald-50: #f0f8f3;
+  --color-gold-600: #b8892b;
+  --color-gold-500: #c99a3d;
+  --color-gold-300: #e6c874;
+  --color-gold-100: #f6e9c8;
+}
+
+@theme inline {
+  --color-cream: var(--color-cream);
+  --color-cream-deep: var(--color-cream-deep);
+  --color-ink: var(--color-ink);
+  --color-emerald-950: var(--color-emerald-950);
+  --color-emerald-900: var(--color-emerald-900);
+  --color-emerald-800: var(--color-emerald-800);
+  --color-emerald-700: var(--color-emerald-700);
+  --color-emerald-600: var(--color-emerald-600);
+  --color-emerald-100: var(--color-emerald-100);
+  --color-emerald-50: var(--color-emerald-50);
+  --color-gold-600: var(--color-gold-600);
+  --color-gold-500: var(--color-gold-500);
+  --color-gold-300: var(--color-gold-300);
+  --color-gold-100: var(--color-gold-100);
+  --font-arabic: var(--font-amiri);
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-manrope);
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+}
+
+/* ---------- Open-book watermark pattern — fits a "knowledge guide" app
+   better than an abstract geometric tile. Repeats a simple open-book
+   glyph, faintly, as page texture. ---------- */
+.geo-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Cg transform='translate(23,23) scale(1.0833)' fill='none' stroke='%23b8892b' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.11'%3E%3Cpath d='M12 7v14'/%3E%3Cpath d='M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 72px 72px;
+}
+
+.geo-pattern-dense {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cg transform='translate(16,16) scale(0.6667)' fill='none' stroke='%23e6c874' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' opacity='0.1'%3E%3Cpath d='M12 7v14'/%3E%3Cpath d='M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 48px 48px;
+}
+
+/* Subtle film-grain texture for atmosphere/depth. Relies on the element
+   already being a positioning context (fixed/relative/absolute) — it
+   deliberately does not set `position` itself, since that would fight
+   with a `fixed` utility class at equal specificity. */
+.grain {
+  isolation: isolate;
+}
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Drifting gold/emerald aura glow, used behind hero content. */
+.aura-bg {
+  position: relative;
+  isolation: isolate;
+}
+.aura-bg::before,
+.aura-bg::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border-radius: 9999px;
+  filter: blur(70px);
+  opacity: 0.4;
+  animation: drift 20s ease-in-out infinite;
+}
+.aura-bg::before {
+  width: 22rem;
+  height: 22rem;
+  top: -8rem;
+  left: -6rem;
+  background: radial-gradient(circle, var(--color-gold-300), transparent 70%);
+}
+.aura-bg::after {
+  width: 26rem;
+  height: 26rem;
+  bottom: -10rem;
+  right: -8rem;
+  background: radial-gradient(circle, var(--color-emerald-600), transparent 70%);
+  animation-delay: -10s;
+}
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(2rem, -1.5rem) scale(1.12);
+  }
+}
+
+.arabesque-divider {
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-gold-500) 20%,
+    var(--color-gold-500) 80%,
+    transparent
+  );
+  height: 1px;
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(20, 90, 68, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(20, 90, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(20, 90, 68, 0);
+  }
+}
+.recording-pulse {
+  animation: pulse-ring 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.msg-in {
+  animation: fade-in-up 0.25s ease-out;
+}
+
+/* Staggered entrance for card grids / hero elements. */
+.stagger-in > * {
+  opacity: 0;
+  animation: fade-in-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.stagger-in > *:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.stagger-in > *:nth-child(2) {
+  animation-delay: 0.12s;
+}
+.stagger-in > *:nth-child(3) {
+  animation-delay: 0.19s;
+}
+.stagger-in > *:nth-child(4) {
+  animation-delay: 0.26s;
+}
+.stagger-in > *:nth-child(5) {
+  animation-delay: 0.33s;
+}
+.stagger-in > *:nth-child(6) {
+  animation-delay: 0.4s;
+}
+.stagger-in > *:nth-child(7) {
+  animation-delay: 0.47s;
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spin-star {
+  animation: spin-slow 3.5s linear infinite;
+}
+
+/* Ornate card: lifts, gains a gold ring, and reveals a corner star mark. */
+.card-ornate {
+  position: relative;
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+.card-ornate::after {
+  content: "✦";
+  position: absolute;
+  top: 0.6rem;
+  right: 0.7rem;
+  color: var(--color-gold-500);
+  font-size: 0.75rem;
+  opacity: 0;
+  transform: scale(0.5) rotate(-30deg);
+  transition:
+    opacity 0.25s ease,
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.card-ornate:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-gold-500);
+  box-shadow:
+    0 16px 32px -14px rgba(10, 40, 32, 0.35),
+    0 0 0 1px rgba(201, 154, 61, 0.25);
+}
+.card-ornate:hover::after {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+/* Gold sheen sweep on hover, for primary buttons. */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-shimmer:hover::after {
+  left: 130%;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-emerald-100);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aura-bg::before,
+  .aura-bg::after,
+  .spin-star,
+  .stagger-in > *,
+  .msg-in {
+    animation: none !important;
+  }
+}

@@ -7,6 +7,7 @@ import { MessageBubble } from "@/components/MessageBubble";
 import { MicButton } from "@/components/MicButton";
 import { Disclaimer } from "@/components/Disclaimer";
 import { SuggestionChips } from "@/components/SuggestionChips";
+import { LoadingIndicator } from "@/components/LoadingIndicator";
 import { newMessageId, now } from "@/lib/storage";
 
 export function ChatView({
@@ -170,12 +171,7 @@ export function ChatView({
               onVote={m.role === "assistant" ? (vote) => handleVote(m, vote) : undefined}
             />
           ))}
-          {sending && (
-            <div className="msg-in flex items-center gap-2.5 text-sm text-emerald-800/60">
-              <span className="spin-star inline-block text-base text-gold-600">✦</span>
-              Checking verified sources…
-            </div>
-          )}
+          {sending && <LoadingIndicator />}
         </div>
       </div>
 

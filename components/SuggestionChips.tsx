@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { getAllSampleQuestions } from "@/lib/corpus";
+import { useEffect, useState } from "react";
+import { getAllSampleQuestions, type SuggestedQuestion } from "@/lib/corpus";
 import { TopicIcon } from "@/components/icons";
 
 function shuffled<T>(arr: T[]): T[] {
@@ -22,9 +22,20 @@ export function SuggestionChips({
   className?: string;
   count?: number;
 }) {
-  // Picked once per mount (e.g. once per refusal message, since each gets
-  // its own component instance) so it doesn't reshuffle on re-render.
-  const [picks] = useState(() => shuffled(getAllSampleQuestions()).slice(0, count));
+  // Math.random() picks a different order on the server than on the client,
+  // so shuffling during the initial render (even in a lazy useState
+  // initializer) causes a hydration mismatch on a fresh page load — see the
+  // /voice page, which (unlike client-navigated routes) always does one.
+  // Starting empty and picking post-mount, same pattern as DateBadge and
+  // the conversation-list hydration read, avoids that entirely.
+  const [picks, setPicks] = useState<SuggestedQuestion[]>([]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPicks(shuffled(getAllSampleQuestions()).slice(0, count));
+  }, [count]);
+
+  if (picks.length === 0) return null;
 
   return (
     <div className={className}>

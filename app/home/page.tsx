@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { MessageCirclePlus, Menu } from "lucide-react";
+import { MessageCirclePlus, Menu, Mic } from "lucide-react";
 import Link from "next/link";
 import { TopicPicker } from "@/components/TopicPicker";
 import { Disclaimer } from "@/components/Disclaimer";
@@ -38,13 +38,22 @@ export default function HomePage() {
 
   return (
     <div className="geo-pattern flex h-dvh flex-col overflow-y-auto bg-cream px-4 py-8 sm:px-8">
-      <Link
-        href="/chat"
-        className="mb-4 flex w-fit items-center gap-1.5 self-start rounded-lg border border-[#0f3d301a] bg-[#ffffffb2] px-3 py-1.5 text-xs font-medium text-emerald-900 transition hover:border-[#c99a3d80]"
-      >
-        <Menu className="h-3.5 w-3.5" />
-        Go to conversations
-      </Link>
+      <div className="mb-4 flex w-full flex-wrap items-center gap-2">
+        <Link
+          href="/chat"
+          className="flex w-fit items-center gap-1.5 rounded-lg border border-[#0f3d301a] bg-[#ffffffb2] px-3 py-1.5 text-xs font-medium text-emerald-900 transition hover:border-[#c99a3d80]"
+        >
+          <Menu className="h-3.5 w-3.5" />
+          Go to conversations
+        </Link>
+        <Link
+          href="/voice"
+          className="flex w-fit items-center gap-1.5 rounded-lg border border-[#0f3d301a] bg-[#ffffffb2] px-3 py-1.5 text-xs font-medium text-emerald-900 transition hover:border-[#c99a3d80]"
+        >
+          <Mic className="h-3.5 w-3.5" />
+          Voice mode
+        </Link>
+      </div>
       <div className="mx-auto w-full max-w-2xl">
         <div className="aura-bg grain mb-8 rounded-3xl px-5 py-8 text-center sm:px-6 sm:py-10">
           <div className="mx-auto mb-4 flex items-center justify-center gap-3 text-gold-500">

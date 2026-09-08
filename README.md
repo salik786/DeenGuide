@@ -104,6 +104,9 @@ this is the page to send a scholar for review.
   that jump straight into a starter question.
 - `/chat` — the actual conversation UI: sidebar with past conversations, the message thread,
   and the input box (text + voice).
+- `/voice` — a hands-free, big-button screen for the event kiosk tablet, where typing is
+  impractical: tap the mic, ask a question out loud, and both the question and the spoken
+  answer play back automatically — see "Voice mode" below.
 - `/scholar-review` — read-only list of every verified-tier source.
 - `/insights?key=...` — every question asked and every 👍/👎, across all browsers/devices (not
   just yours) — see "Insights" below.
@@ -147,13 +150,32 @@ conversation (`/insights/conversation/[id]`, with the complete answer text and s
 
 ## Voice chat
 
-- Tap the microphone to record a question; it's transcribed via OpenAI Whisper and dropped into
-  the text box for you to review/edit before sending (it does not auto-send, on purpose — for a
-  sensitive topic like this, a human should always confirm what the bot heard).
+- On `/chat`, tap the microphone to record a question; it's transcribed via OpenAI Whisper and
+  dropped into the text box for you to review/edit before sending (it does not auto-send, on
+  purpose — for a sensitive topic like this, a human should always confirm what the bot heard).
 - Tap "Listen" under any answer to hear it read aloud via OpenAI TTS.
 - Voice input requires microphone permission and a browser that supports `MediaRecorder`
   (all modern browsers). It also requires HTTPS (or `localhost`) — browsers block mic access on
   plain HTTP.
+
+### Voice mode (`/voice`)
+
+Built for the event's Pepper-robot tablet, where typing a question is impractical. It's the same
+transcribe/send/speak pieces as `/chat`, chained into a hands-free loop instead of a manual one:
+
+1. Tap the big mic button and ask a question out loud; tap it again (or it auto-stops) to finish.
+2. The transcribed text is shown large on screen for ~2.5 seconds ("You asked: ...") — this is
+   the one deliberate exception to the no-auto-send rule above, since requiring a manual send tap
+   defeats the point of a voice-first screen for this device. If the transcription is visibly
+   wrong, tap "cancel" during that window instead of waiting for a bad answer.
+3. It sends automatically, and the spoken answer plays automatically via TTS when it arrives —
+   no taps needed for either half of the round trip.
+4. The mic is ready again as soon as playback ends. "Start Over" resets the on-screen
+   conversation (a fresh visitor); it does not need a page reload.
+
+Each `/voice` question is still logged to Insights exactly like `/chat`, and citations/status
+badges/thumbs voting all still show on screen — voice mode changes *how* you interact, not what
+tier system or guardrails apply.
 
 ## Cost: prompt caching
 

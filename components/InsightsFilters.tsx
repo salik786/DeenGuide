@@ -14,7 +14,7 @@ function Select({
       name={name}
       defaultValue={defaultValue}
       onChange={(e) => e.currentTarget.form?.requestSubmit()}
-      className="rounded-lg border border-emerald-900/15 bg-white px-2.5 py-1.5 text-sm text-emerald-950 outline-none focus:border-emerald-600"
+      className="rounded-lg border border-[#0f3d3026] bg-white px-2.5 py-1.5 text-sm text-emerald-950 outline-none focus:border-emerald-600"
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>

@@ -9,12 +9,33 @@
   --color-emerald-800: #145a44;
   --color-emerald-700: #1a6e53;
   --color-emerald-600: #1f8563;
+  --color-emerald-300: #8fcdac;
+  --color-emerald-200: #b9dfc9;
   --color-emerald-100: #dcefe4;
   --color-emerald-50: #f0f8f3;
+  --color-gold-900: #5c4413;
+  --color-gold-700: #96701f;
   --color-gold-600: #b8892b;
   --color-gold-500: #c99a3d;
+  --color-gold-400: #dab55c;
   --color-gold-300: #e6c874;
+  --color-gold-200: #eeda9e;
   --color-gold-100: #f6e9c8;
+  /* Static hex overrides for Tailwind's built-in amber/red palette — the
+     defaults are defined with oklch(), which old browsers (e.g. the Chrome
+     81 WebView on the event's Pepper-robot tablet) can't parse at all. */
+  --color-amber-900: #78350f;
+  --color-amber-700: #b45309;
+  --color-amber-500: #f59e0b;
+  --color-amber-400: #fbbf24;
+  --color-amber-300: #fcd34d;
+  --color-amber-100: #fef3c7;
+  --color-amber-50: #fffbeb;
+  --color-red-700: #b91c1c;
+  --color-red-600: #dc2626;
+  --color-red-500: #ef4444;
+  --color-red-300: #fca5a5;
+  --color-red-100: #fee2e2;
 }
 
 @theme inline {
@@ -26,12 +47,30 @@
   --color-emerald-800: var(--color-emerald-800);
   --color-emerald-700: var(--color-emerald-700);
   --color-emerald-600: var(--color-emerald-600);
+  --color-emerald-300: var(--color-emerald-300);
+  --color-emerald-200: var(--color-emerald-200);
   --color-emerald-100: var(--color-emerald-100);
   --color-emerald-50: var(--color-emerald-50);
+  --color-gold-900: var(--color-gold-900);
+  --color-gold-700: var(--color-gold-700);
   --color-gold-600: var(--color-gold-600);
   --color-gold-500: var(--color-gold-500);
+  --color-gold-400: var(--color-gold-400);
   --color-gold-300: var(--color-gold-300);
+  --color-gold-200: var(--color-gold-200);
   --color-gold-100: var(--color-gold-100);
+  --color-amber-900: var(--color-amber-900);
+  --color-amber-700: var(--color-amber-700);
+  --color-amber-500: var(--color-amber-500);
+  --color-amber-400: var(--color-amber-400);
+  --color-amber-300: var(--color-amber-300);
+  --color-amber-100: var(--color-amber-100);
+  --color-amber-50: var(--color-amber-50);
+  --color-red-700: var(--color-red-700);
+  --color-red-600: var(--color-red-600);
+  --color-red-500: var(--color-red-500);
+  --color-red-300: var(--color-red-300);
+  --color-red-100: var(--color-red-100);
   --font-arabic: var(--font-amiri);
   --font-display: var(--font-fraunces);
   --font-sans: var(--font-manrope);

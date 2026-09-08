@@ -93,16 +93,16 @@ function FormattedText({ text }: { text: string }) {
 }
 
 const CARD_STYLES = {
-  verified: "border-y-emerald-900/10 border-r-emerald-900/10 border-l-gold-400 bg-white text-emerald-950",
-  unverified: "border-y-amber-300/60 border-r-amber-300/60 border-l-amber-500 bg-amber-50 text-emerald-950",
-  declined: "border-y-gold-400/40 border-r-gold-400/40 border-l-gold-500 bg-gold-100/50 text-emerald-900",
+  verified: "border-y-[#0f3d301a] border-r-[#0f3d301a] border-l-gold-400 bg-white text-emerald-950",
+  unverified: "border-y-[#fcd34d99] border-r-[#fcd34d99] border-l-amber-500 bg-amber-50 text-emerald-950",
+  declined: "border-y-[#dab55c66] border-r-[#dab55c66] border-l-gold-500 bg-[#f6e9c880] text-emerald-900",
 };
 
 function WebSourceList({ sources }: { sources: WebSource[] }) {
   if (sources.length === 0) return null;
   return (
-    <div className="mt-3 space-y-1.5 border-t border-amber-400/30 pt-3">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-700/70">
+    <div className="mt-3 space-y-1.5 border-t border-[#fbbf244c] pt-3">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#b45309b2]">
         Checked while answering
       </p>
       {sources.map((s) => (
@@ -111,11 +111,11 @@ function WebSourceList({ sources }: { sources: WebSource[] }) {
           href={s.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 rounded-lg border border-amber-400/30 bg-amber-100/40 px-3 py-1.5 text-xs transition hover:border-amber-500/60 hover:bg-amber-100"
+          className="flex items-center gap-2 rounded-lg border border-[#fbbf244c] bg-[#fef3c766] px-3 py-1.5 text-xs transition hover:border-[#f59e0b99] hover:bg-amber-100"
         >
           <Globe className="h-3 w-3 shrink-0 text-amber-700" />
           <span className="min-w-0 flex-1 truncate text-amber-900">{s.title || s.url}</span>
-          <ExternalLink className="h-3 w-3 shrink-0 text-amber-700/50" />
+          <ExternalLink className="h-3 w-3 shrink-0 text-[#b4530980]" />
         </a>
       ))}
     </div>
@@ -125,14 +125,14 @@ function WebSourceList({ sources }: { sources: WebSource[] }) {
 function StatusBadge({ status }: { status: "verified" | "unverified" }) {
   if (status === "verified") {
     return (
-      <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-emerald-700/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+      <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-[#1a6e531a] px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
         <ShieldCheck className="h-3 w-3" />
         Verified
       </span>
     );
   }
   return (
-    <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+    <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-[#f59e0b26] px-2 py-0.5 text-[11px] font-semibold text-amber-700">
       <ShieldQuestion className="h-3 w-3" />
       Not verified — consult a scholar
     </span>
@@ -146,7 +146,7 @@ function VoteButtons({ vote, onVote }: { vote?: Vote; onVote: (vote: Vote) => vo
         onClick={() => onVote("up")}
         title="Helpful"
         className={`rounded-lg p-1 transition ${
-          vote === "up" ? "bg-emerald-700/15 text-emerald-700" : "text-emerald-700/50 hover:bg-emerald-700/10 hover:text-emerald-700"
+          vote === "up" ? "bg-[#1a6e5326] text-emerald-700" : "text-[#1a6e5380] hover:bg-[#1a6e531a] hover:text-emerald-700"
         }`}
       >
         <ThumbsUp className="h-3.5 w-3.5" fill={vote === "up" ? "currentColor" : "none"} />
@@ -155,7 +155,7 @@ function VoteButtons({ vote, onVote }: { vote?: Vote; onVote: (vote: Vote) => vo
         onClick={() => onVote("down")}
         title="Not helpful"
         className={`rounded-lg p-1 transition ${
-          vote === "down" ? "bg-red-700/10 text-red-700" : "text-emerald-700/50 hover:bg-red-700/10 hover:text-red-700"
+          vote === "down" ? "bg-[#b91c1c1a] text-red-700" : "text-[#1a6e5380] hover:bg-[#b91c1c1a] hover:text-red-700"
         }`}
       >
         <ThumbsDown className="h-3.5 w-3.5" fill={vote === "down" ? "currentColor" : "none"} />
@@ -227,8 +227,8 @@ export function MessageBubble({
           <WebSourceList sources={message.webSources} />
         )}
         {status === "declined" && onSuggestedQuestion && (
-          <div className="mt-3 border-t border-gold-400/30 pt-3">
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-emerald-800/60">
+          <div className="mt-3 border-t border-[#dab55c4c] pt-3">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#145a4499]">
               Things I can help with
             </p>
             <SuggestionChips onSelect={onSuggestedQuestion} className="flex flex-wrap gap-1.5" />
@@ -240,7 +240,7 @@ export function MessageBubble({
               <button
                 onClick={handleSpeak}
                 disabled={speaking}
-                className="flex items-center gap-1.5 text-xs font-medium text-emerald-700/70 transition hover:text-emerald-900 disabled:opacity-60"
+                className="flex items-center gap-1.5 text-xs font-medium text-[#1a6e53b2] transition hover:text-emerald-900 disabled:opacity-60"
               >
                 {speaking ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Volume2 className="h-3.5 w-3.5" />}
                 {speaking ? "Playing…" : "Listen"}

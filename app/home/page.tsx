@@ -40,7 +40,7 @@ export default function HomePage() {
     <div className="geo-pattern flex h-dvh flex-col overflow-y-auto bg-cream px-4 py-8 sm:px-8">
       <Link
         href="/chat"
-        className="mb-4 flex w-fit items-center gap-1.5 self-start rounded-lg border border-emerald-900/10 bg-white/70 px-3 py-1.5 text-xs font-medium text-emerald-900 transition hover:border-gold-500/50"
+        className="mb-4 flex w-fit items-center gap-1.5 self-start rounded-lg border border-[#0f3d301a] bg-[#ffffffb2] px-3 py-1.5 text-xs font-medium text-emerald-900 transition hover:border-[#c99a3d80]"
       >
         <Menu className="h-3.5 w-3.5" />
         Go to conversations
@@ -55,9 +55,9 @@ export default function HomePage() {
           <p className="font-arabic text-3xl leading-relaxed text-emerald-800 sm:text-4xl">
             بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ
           </p>
-          <DateBadge className="mt-3 text-xs tracking-wide text-emerald-800/50" />
+          <DateBadge className="mt-3 text-xs tracking-wide text-[#145a4480]" />
           <h1 className="mt-4 font-display text-3xl italic text-emerald-950 sm:text-4xl">Welcome to Deen Guide</h1>
-          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-emerald-900/70">
+          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[#0f3d30b2]">
             Ask any Islamic question in a single ongoing conversation. Answers grounded in
             Sunnah.com and Quran.com are marked Verified with the exact source shown; anything
             else is clearly marked as not verified.
@@ -70,7 +70,7 @@ export default function HomePage() {
 
         <button
           onClick={() => startConversation()}
-          className="btn-shimmer mb-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-800 px-4 py-3.5 font-medium text-white shadow-lg shadow-emerald-900/20 transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-xl hover:shadow-emerald-900/25"
+          className="btn-shimmer mb-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-800 px-4 py-3.5 font-medium text-white shadow-lg shadow-[#0f3d3033] transition hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-xl hover:shadow-[#0f3d3040]"
         >
           <MessageCirclePlus className="h-5 w-5" />
           Start a New Conversation
@@ -78,7 +78,7 @@ export default function HomePage() {
 
         <div className="mb-4 flex items-center gap-3">
           <span className="arabesque-divider flex-1" />
-          <p className="shrink-0 text-xs font-semibold uppercase tracking-wider text-emerald-800/60">
+          <p className="shrink-0 text-xs font-semibold uppercase tracking-wider text-[#145a4499]">
             Or jump straight into a topic
           </p>
           <span className="arabesque-divider flex-1" />

@@ -142,7 +142,7 @@ export function ChatView({
             <h1 className="truncate font-display text-lg italic leading-none text-emerald-950">
               Deen Guide
             </h1>
-            <p className="truncate text-xs text-emerald-800/60">
+            <p className="truncate text-xs text-[#145a4499]">
               Verified answers are cited; anything else is clearly marked
             </p>
           </div>
@@ -156,7 +156,7 @@ export function ChatView({
             <div className="space-y-4">
               <Disclaimer />
               <div>
-                <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-emerald-800/60">
+                <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-[#145a4499]">
                   Frequently asked questions
                 </p>
                 <SuggestionChips onSelect={sendMessage} className="stagger-in flex flex-wrap gap-2" />
@@ -175,7 +175,7 @@ export function ChatView({
         </div>
       </div>
 
-      <div className="border-t border-emerald-900/10 bg-white px-4 py-3 sm:px-6">
+      <div className="border-t border-[#0f3d301a] bg-white px-4 py-3 sm:px-6">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -195,7 +195,7 @@ export function ChatView({
             }}
             rows={1}
             placeholder="Ask about the Five Pillars, prayer, fasting, or manners…"
-            className="max-h-32 flex-1 resize-none rounded-2xl border border-emerald-900/15 bg-cream px-4 py-2.5 text-sm text-emerald-950 outline-none transition-shadow placeholder:text-emerald-900/40 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10"
+            className="max-h-32 flex-1 resize-none rounded-2xl border border-[#0f3d3026] bg-cream px-4 py-2.5 text-sm text-emerald-950 outline-none transition-shadow placeholder:text-[#0f3d3066] focus:border-emerald-600 focus:ring-4 focus:ring-[#1f85631a]"
           />
           <button
             type="submit"

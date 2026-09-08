@@ -32,7 +32,7 @@ export function SuggestionChips({
         <button
           key={`${topicId}-${question}`}
           onClick={() => onSelect(question)}
-          className="flex items-start gap-1.5 rounded-2xl border border-emerald-800/15 bg-white/70 px-3 py-2 text-left text-sm text-emerald-900 transition hover:-translate-y-0.5 hover:border-gold-500/60 hover:bg-gold-100/50 hover:shadow-sm"
+          className="flex items-start gap-1.5 rounded-2xl border border-[#145a4426] bg-[#ffffffb2] px-3 py-2 text-left text-sm text-emerald-900 transition hover:-translate-y-0.5 hover:border-[#c99a3d99] hover:bg-[#f6e9c880] hover:shadow-sm"
         >
           <TopicIcon name={topicIcon} className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-700" />
           {question}

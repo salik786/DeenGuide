@@ -22,7 +22,7 @@ export function LoadingIndicator() {
   }, []);
 
   return (
-    <div className="msg-in flex items-center gap-2.5 text-sm text-emerald-800/60">
+    <div className="msg-in flex items-center gap-2.5 text-sm text-[#145a4499]">
       <span className="spin-star inline-block text-base text-gold-600">✦</span>
       {MESSAGES[index]}
     </div>

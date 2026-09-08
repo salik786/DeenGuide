@@ -15,9 +15,9 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  verified: "bg-emerald-700/10 text-emerald-700",
-  unverified: "bg-amber-500/15 text-amber-700",
-  declined: "bg-gold-400/20 text-gold-700",
+  verified: "bg-[#1a6e531a] text-emerald-700",
+  unverified: "bg-[#f59e0b26] text-amber-700",
+  declined: "bg-[#dab55c33] text-gold-700",
 };
 
 const PAGE_SIZE = 20;
@@ -62,10 +62,10 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
   if (!authorized) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-cream px-4">
-        <div className="w-full max-w-sm rounded-2xl border border-emerald-900/10 bg-white p-6 text-center shadow-sm">
-          <Lock className="mx-auto h-6 w-6 text-emerald-800/50" />
+        <div className="w-full max-w-sm rounded-2xl border border-[#0f3d301a] bg-white p-6 text-center shadow-sm">
+          <Lock className="mx-auto h-6 w-6 text-[#145a4480]" />
           <h1 className="mt-3 font-display text-xl text-emerald-950">Access key required</h1>
-          <p className="mt-2 text-sm text-emerald-900/60">
+          <p className="mt-2 text-sm text-[#0f3d3099]">
             {requiredKey
               ? "Add ?key=... to the URL with the access key from .env.local (INSIGHTS_KEY)."
               : "INSIGHTS_KEY isn't set in .env.local yet, so this page can't be unlocked."}
@@ -82,9 +82,9 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
   if (!isDbConfigured) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-cream px-4">
-        <div className="w-full max-w-sm rounded-2xl border border-emerald-900/10 bg-white p-6 text-center shadow-sm">
+        <div className="w-full max-w-sm rounded-2xl border border-[#0f3d301a] bg-white p-6 text-center shadow-sm">
           <h1 className="font-display text-xl text-emerald-950">Database not configured</h1>
-          <p className="mt-2 text-sm text-emerald-900/60">
+          <p className="mt-2 text-sm text-[#0f3d3099]">
             Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN (or the KV_REST_API_* names)
             in .env.local, then restart the server.
           </p>
@@ -129,19 +129,19 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
         </Link>
 
         <h1 className="font-display text-3xl text-emerald-950">Insights</h1>
-        <p className="mt-2 max-w-2xl text-sm text-emerald-900/70">
+        <p className="mt-2 max-w-2xl text-sm text-[#0f3d30b2]">
           Every question asked and every 👍/👎 rating, across everyone using this deployment —
           not just your own browser. Keep this link private.
         </p>
 
         <div className="mt-4 flex items-center gap-3">
-          <span className="flex items-center gap-1 rounded-full bg-emerald-700/10 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+          <span className="flex items-center gap-1 rounded-full bg-[#1a6e531a] px-2.5 py-1 text-xs font-semibold text-emerald-700">
             <ThumbsUp className="h-3.5 w-3.5" /> {upCount}
           </span>
-          <span className="flex items-center gap-1 rounded-full bg-red-700/10 px-2.5 py-1 text-xs font-semibold text-red-700">
+          <span className="flex items-center gap-1 rounded-full bg-[#b91c1c1a] px-2.5 py-1 text-xs font-semibold text-red-700">
             <ThumbsDown className="h-3.5 w-3.5" /> {downCount}
           </span>
-          <span className="text-xs text-emerald-800/50">
+          <span className="text-xs text-[#145a4480]">
             {filtered.length} of {rows.length} logged questions match these filters
           </span>
         </div>
@@ -151,8 +151,8 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
         </div>
 
         {pageRows.length === 0 ? (
-          <div className="rounded-xl border border-emerald-900/10 bg-white px-4 py-6 text-center">
-            <p className="text-sm text-emerald-900/60">
+          <div className="rounded-xl border border-[#0f3d301a] bg-white px-4 py-6 text-center">
+            <p className="text-sm text-[#0f3d3099]">
               {rows.length === 0
                 ? "Nothing logged yet. Questions will appear here as people use the assistant."
                 : "No questions match these filters."}
@@ -164,10 +164,10 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-emerald-900/10 bg-white">
+          <div className="overflow-x-auto rounded-xl border border-[#0f3d301a] bg-white">
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-emerald-900/10 bg-emerald-50/60 text-left text-xs uppercase tracking-wide text-emerald-800/60">
+                <tr className="border-b border-[#0f3d301a] bg-[#f0f8f399] text-left text-xs uppercase tracking-wide text-[#145a4499]">
                   <th className="w-36 px-3 py-2.5 font-semibold">Date</th>
                   <th className="w-28 px-3 py-2.5 font-semibold">Status</th>
                   <th className="w-16 px-3 py-2.5 font-semibold">Vote</th>
@@ -177,8 +177,8 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
               </thead>
               <tbody>
                 {pageRows.map((r) => (
-                  <tr key={r.id} className="border-b border-emerald-900/5 align-top last:border-b-0">
-                    <td className="whitespace-nowrap px-3 py-3 text-xs text-emerald-800/50">{formatTime(r.createdAt)}</td>
+                  <tr key={r.id} className="border-b border-[#0f3d300d] align-top last:border-b-0">
+                    <td className="whitespace-nowrap px-3 py-3 text-xs text-[#145a4480]">{formatTime(r.createdAt)}</td>
                     <td className="px-3 py-3">
                       <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_COLOR[r.status]}`}>
                         {STATUS_LABEL[r.status]}
@@ -187,7 +187,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
                     <td className="px-3 py-3">
                       {r.vote === "up" && <ThumbsUp className="h-4 w-4 text-emerald-700" fill="currentColor" />}
                       {r.vote === "down" && <ThumbsDown className="h-4 w-4 text-red-700" fill="currentColor" />}
-                      {!r.vote && <span className="text-emerald-800/30">—</span>}
+                      {!r.vote && <span className="text-[#145a444c]">—</span>}
                     </td>
                     <td className="px-3 py-3 font-medium text-emerald-950">{r.question}</td>
                     <td className="px-3 py-3">
@@ -195,7 +195,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
                         <Link
                           href={`/insights/conversation/${r.conversationId}?key=${params.key}&returnTo=${encodeURIComponent(currentUrl)}`}
                           title="View full conversation"
-                          className="rounded-lg p-1.5 text-emerald-700 transition hover:bg-emerald-700/10"
+                          className="rounded-lg p-1.5 text-emerald-700 transition hover:bg-[#1a6e531a]"
                         >
                           <Eye className="h-4 w-4" />
                         </Link>
@@ -203,7 +203,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
                           <input type="hidden" name="id" value={r.id} />
                           <input type="hidden" name="key" value={params.key} />
                           <input type="hidden" name="returnTo" value={currentUrl} />
-                          <button type="submit" title="Delete this row" className="rounded-lg p-1.5 text-red-600/70 transition hover:bg-red-600/10 hover:text-red-700">
+                          <button type="submit" title="Delete this row" className="rounded-lg p-1.5 text-[#dc2626b2] transition hover:bg-[#dc26261a] hover:text-red-700">
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </form>
@@ -221,19 +221,19 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
             <Link
               href={buildHref(params, { page: String(Math.max(1, currentPage - 1)) })}
               aria-disabled={currentPage <= 1}
-              className={`rounded-lg border border-emerald-900/15 px-3 py-1.5 ${
+              className={`rounded-lg border border-[#0f3d3026] px-3 py-1.5 ${
                 currentPage <= 1 ? "pointer-events-none opacity-40" : "text-emerald-800 hover:bg-emerald-50"
               }`}
             >
               ← Previous
             </Link>
-            <span className="text-emerald-800/60">
+            <span className="text-[#145a4499]">
               Page {currentPage} of {totalPages}
             </span>
             <Link
               href={buildHref(params, { page: String(Math.min(totalPages, currentPage + 1)) })}
               aria-disabled={currentPage >= totalPages}
-              className={`rounded-lg border border-emerald-900/15 px-3 py-1.5 ${
+              className={`rounded-lg border border-[#0f3d3026] px-3 py-1.5 ${
                 currentPage >= totalPages ? "pointer-events-none opacity-40" : "text-emerald-800 hover:bg-emerald-50"
               }`}
             >

@@ -22,7 +22,7 @@ export default function ScholarReviewPage() {
         </Link>
 
         <h1 className="font-display text-3xl text-emerald-950">Scholar Review</h1>
-        <p className="mt-2 max-w-2xl text-sm text-emerald-900/70">
+        <p className="mt-2 max-w-2xl text-sm text-[#0f3d30b2]">
           The assistant now answers in two tiers. Answers marked <strong>Verified</strong> use
           only the hand-picked, verbatim quotes listed below, one list per topic, and cite the
           exact entry used. Answers marked <strong>Not verified</strong> come from Claude&rsquo;s
@@ -36,28 +36,28 @@ export default function ScholarReviewPage() {
         <div className="mt-8 space-y-10">
           {data.map(({ topic, sources }) => (
             <section key={topic.id}>
-              <div className="flex items-center gap-2 border-b border-gold-500/30 pb-2">
+              <div className="flex items-center gap-2 border-b border-[#c99a3d4c] pb-2">
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-800 text-gold-100">
                   <TopicIcon name={topic.icon} className="h-4 w-4" />
                 </span>
                 <h2 className="font-display text-xl text-emerald-950">{topic.name}</h2>
-                <span className="text-xs text-emerald-800/50">({sources.length} sources)</span>
+                <span className="text-xs text-[#145a4480]">({sources.length} sources)</span>
               </div>
 
               <div className="mt-3 space-y-3">
                 {sources.map((s) => (
-                  <div key={s.id} className="rounded-xl border border-emerald-900/10 bg-white p-4 text-sm">
-                    <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold text-emerald-800/70">
+                  <div key={s.id} className="rounded-xl border border-[#0f3d301a] bg-white p-4 text-sm">
+                    <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold text-[#145a44b2]">
                       {s.type === "quran" ? (
                         <BookOpen className="h-3.5 w-3.5" />
                       ) : (
                         <ScrollText className="h-3.5 w-3.5" />
                       )}
                       {s.collection} — {s.reference}
-                      {s.inBookReference && <span className="font-normal text-emerald-800/40">({s.inBookReference})</span>}
+                      {s.inBookReference && <span className="font-normal text-[#145a4466]">({s.inBookReference})</span>}
                     </div>
                     {s.narrator && (
-                      <p className="mb-1 text-xs text-emerald-800/60">Narrated by {s.narrator}</p>
+                      <p className="mb-1 text-xs text-[#145a4499]">Narrated by {s.narrator}</p>
                     )}
                     {s.arabic && (
                       <p dir="rtl" className="font-arabic mb-2 text-lg leading-relaxed text-emerald-950">
@@ -65,7 +65,7 @@ export default function ScholarReviewPage() {
                       </p>
                     )}
                     <p className="leading-relaxed text-emerald-900">&ldquo;{s.translation}&rdquo;</p>
-                    <div className="mt-2 flex items-center justify-between text-xs text-emerald-800/50">
+                    <div className="mt-2 flex items-center justify-between text-xs text-[#145a4480]">
                       <span>Translator: {s.translator}</span>
                       <a
                         href={s.url}

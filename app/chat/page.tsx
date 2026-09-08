@@ -103,12 +103,12 @@ export default function ChatPage() {
           <div className="geo-pattern relative flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="absolute top-4 left-4 rounded-lg border border-emerald-900/10 bg-white/70 px-3 py-1.5 text-xs font-medium text-emerald-900 lg:hidden"
+              className="absolute top-4 left-4 rounded-lg border border-[#0f3d301a] bg-[#ffffffb2] px-3 py-1.5 text-xs font-medium text-emerald-900 lg:hidden"
             >
               ☰ Menu
             </button>
             <p className="font-display text-2xl italic text-emerald-950">No conversation open</p>
-            <p className="max-w-xs text-sm text-emerald-900/60">
+            <p className="max-w-xs text-sm text-[#0f3d3099]">
               Start a new conversation, pick one from the sidebar, or head back to the topic
               overview.
             </p>
@@ -122,7 +122,7 @@ export default function ChatPage() {
               </button>
               <Link
                 href="/home"
-                className="rounded-xl border border-emerald-800/20 px-4 py-2.5 text-sm font-medium text-emerald-900 transition hover:border-gold-500/50 hover:bg-white/60"
+                className="rounded-xl border border-[#145a4433] px-4 py-2.5 text-sm font-medium text-emerald-900 transition hover:border-[#c99a3d80] hover:bg-[#ffffff99]"
               >
                 Browse topics
               </Link>

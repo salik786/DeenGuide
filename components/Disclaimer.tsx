@@ -3,7 +3,7 @@ import { ShieldCheck } from "lucide-react";
 export function Disclaimer({ compact = false }: { compact?: boolean }) {
   return (
     <div
-      className={`flex items-start gap-2 rounded-xl border border-gold-300/60 bg-gold-100/60 text-emerald-900 ${
+      className={`flex items-start gap-2 rounded-xl border border-[#e6c87499] bg-[#f6e9c899] text-emerald-900 ${
         compact ? "px-3 py-2 text-xs" : "px-4 py-3 text-sm"
       }`}
     >

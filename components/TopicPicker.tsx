@@ -14,14 +14,14 @@ export function TopicPicker({
         <button
           key={topic.id}
           onClick={() => onSelect(topic.id)}
-          className="card-ornate group relative flex flex-col items-start gap-3 overflow-hidden rounded-2xl border border-emerald-900/10 bg-white p-5 text-left shadow-sm"
+          className="card-ornate group relative flex flex-col items-start gap-3 overflow-hidden rounded-2xl border border-[#0f3d301a] bg-white p-5 text-left shadow-sm"
         >
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-700 to-emerald-900 text-gold-100 shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
             <TopicIcon name={topic.icon} className="h-5 w-5" />
           </div>
           <div>
             <h3 className="font-display text-lg text-emerald-950">{topic.name}</h3>
-            <p className="mt-1 text-sm leading-relaxed text-emerald-900/65">{topic.description}</p>
+            <p className="mt-1 text-sm leading-relaxed text-[#0f3d30a6]">{topic.description}</p>
           </div>
         </button>
       ))}

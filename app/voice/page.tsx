@@ -2,13 +2,24 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Mic, Loader2, Volume2, Keyboard, RotateCcw, MicOff, Ear } from "lucide-react";
+import { Mic, Loader2, Volume2, Keyboard, RotateCcw, MicOff, Ear, Menu } from "lucide-react";
 import { MessageBubble } from "@/components/MessageBubble";
 import { Disclaimer } from "@/components/Disclaimer";
 import { SuggestionChips } from "@/components/SuggestionChips";
 import { DateBadge } from "@/components/DateBadge";
-import type { ChatMessage, Vote } from "@/lib/types";
-import { newConversationId, newMessageId, now } from "@/lib/storage";
+import { Sidebar } from "@/components/Sidebar";
+import type { ChatMessage, Conversation, Vote } from "@/lib/types";
+import {
+  loadConversations,
+  saveConversations,
+  upsertConversation,
+  deleteConversationById,
+  newConversationId,
+  newMessageId,
+  getActiveConversationId,
+  setActiveConversationId,
+  now,
+} from "@/lib/storage";
 
 type Phase = "idle" | "recording" | "transcribing" | "confirming" | "answering" | "speaking" | "error";
 
@@ -64,7 +75,7 @@ function LanguageToggle({
   className?: string;
 }) {
   return (
-    <div className={`flex items-center gap-1 rounded-full border border-[#0f3d301a] bg-white p-1 ${className}`}>
+    <div className={`inline-flex items-center gap-1 rounded-full border border-[#0f3d301a] bg-white p-1 ${className}`}>
       {(["en", "ur"] as const).map((code) => (
         <button
           key={code}
@@ -81,12 +92,17 @@ function LanguageToggle({
   );
 }
 
+function newConversation(): Conversation {
+  return { id: newConversationId(), title: "New conversation", messages: [], createdAt: now(), updatedAt: now() };
+}
+
 /** A big-button, fully hands-free voice screen for the event kiosk tablet,
  * where typing (and repeatedly tapping a mic button) is impractical. One
  * tap to begin, then it loops on its own: listen (auto-stops once you stop
  * talking) -> transcribe -> briefly show what it heard -> auto-send ->
- * auto-play the spoken answer -> listen again. Each visitor gets a fresh
- * conversation on load; "Start Over" resets mid-session too. */
+ * auto-play the spoken answer -> listen again. Conversations are shared
+ * with /chat (same localStorage list) — a sidebar here lets you browse and
+ * switch between them exactly like the typed chat does. */
 export default function VoicePage() {
   const [started, setStarted] = useState(false);
   const [phase, setPhase] = useState<Phase>("idle");
@@ -96,7 +112,10 @@ export default function VoicePage() {
   // (a bad transcription, a network blip) are safe to recover from on
   // their own so the kiosk doesn't get stuck waiting on a visitor to help.
   const [needsManualRetry, setNeedsManualRetry] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   // Whisper auto-detects the spoken language when none is given, but that's
   // unreliable on short clips and can lock onto the wrong language entirely
@@ -104,11 +123,13 @@ export default function VoicePage() {
   // instead of guessing, the visitor picks which language they're speaking.
   const [language, setLanguage] = useState<"en" | "ur">("en");
 
-  const conversationIdRef = useRef(newConversationId());
-  // Bumped by startOver() so any in-flight async step (recording, VAD,
+  const messages = conversations.find((c) => c.id === activeId)?.messages ?? [];
+
+  // Bumped whenever the active conversation changes (Start Over, sidebar
+  // switch/new/delete) so any in-flight async step (recording, VAD,
   // transcription, the chat call, TTS playback, a pending re-listen timer)
   // can tell it's stale and quietly no-op instead of clobbering state from
-  // a session the visitor already reset.
+  // a conversation the visitor already left.
   const sessionRef = useRef(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -140,6 +161,31 @@ export default function VoicePage() {
   }
 
   useEffect(() => {
+    // Reading localStorage must happen post-mount to avoid an SSR/client
+    // markup mismatch — same pattern as /chat's hydration read.
+    const loaded = loadConversations();
+    const storedActiveId = getActiveConversationId();
+    const existing = loaded.find((c) => c.id === storedActiveId);
+    if (existing) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setConversations(loaded);
+      setActiveId(existing.id);
+    } else {
+      // /voice always needs an active conversation to attach the voice loop
+      // to (unlike /chat, it has no "no conversation open" empty state).
+      const conv = newConversation();
+      setConversations(upsertConversation(loaded, conv));
+      setActiveId(conv.id);
+      setActiveConversationId(conv.id);
+    }
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (hydrated) saveConversations(conversations);
+  }, [conversations, hydrated]);
+
+  useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length, phase]);
 
@@ -158,7 +204,11 @@ export default function VoicePage() {
     relistenTimerRef.current = null;
   }
 
-  function startOver() {
+  /** Tears down whatever the voice loop is currently doing — used whenever
+   * the active conversation is about to change from under it (switching,
+   * creating, or deleting one), so a stray recording/playback from the
+   * conversation being left doesn't bleed into the next one. */
+  function interruptVoiceLoop() {
     sessionRef.current += 1;
     clearAllTimers();
     stopVad();
@@ -167,13 +217,29 @@ export default function VoicePage() {
       mediaRecorderRef.current.stop();
     }
     audioRef.current?.pause();
-    conversationIdRef.current = newConversationId();
-    setMessages([]);
     setConfirmText("");
     setErrorText("");
     setNeedsManualRetry(false);
     setPhase("idle");
-    beginListening();
+  }
+
+  function selectConversation(id: string) {
+    interruptVoiceLoop();
+    setActiveId(id);
+    setActiveConversationId(id);
+    setSidebarOpen(false);
+    if (started) beginListening();
+  }
+
+  function startNewConversation() {
+    const conv = newConversation();
+    setConversations((prev) => upsertConversation(prev, conv));
+    selectConversation(conv.id);
+  }
+
+  function handleDeleteConversation(id: string) {
+    setConversations((prev) => deleteConversationById(prev, id));
+    if (activeId === id) startNewConversation();
   }
 
   /** Answer playback (and the next listen cycle) happens several `await`s
@@ -181,10 +247,10 @@ export default function VoicePage() {
    * Browsers' autoplay policy only credits a "real" user gesture for so
    * long, and by then it's expired, silently blocking audio.play() with no
    * error anywhere in the chain. Playing (and instantly pausing) a silent
-   * clip synchronously inside the one real tap (the "Tap to Begin" gate,
-   * or Start Over) marks this <audio> element as activated for the rest of
-   * the page's life, so every later playback on that same element — even
-   * from a tap-less auto-restart — goes through. */
+   * clip synchronously inside a real tap (the "Tap to Begin" gate, Start
+   * Over, or a sidebar switch) marks this <audio> element as activated for
+   * the rest of the page's life, so every later playback on that same
+   * element — even from a tap-less auto-restart — goes through. */
   function unlockAudio() {
     const el = audioRef.current ?? new Audio();
     audioRef.current = el;
@@ -200,8 +266,8 @@ export default function VoicePage() {
   }
 
   /** Schedules the next listen cycle instead of requiring a tap — the core
-   * of "hands-free". Guarded by the session token so a Start Over during
-   * the pause doesn't resurrect a stale cycle. */
+   * of "hands-free". Guarded by the session token so a conversation switch
+   * during the pause doesn't resurrect a stale cycle. */
   function scheduleRelisten(session: number, delayMs = RELISTEN_DELAY_MS) {
     if (relistenTimerRef.current) clearTimeout(relistenTimerRef.current);
     relistenTimerRef.current = setTimeout(() => {
@@ -348,16 +414,23 @@ export default function VoicePage() {
   }
 
   async function sendQuestion(text: string, session: number) {
-    if (session !== sessionRef.current) return;
-    const userMessage: ChatMessage = { id: newMessageId(), role: "user", content: text, createdAt: now() };
-    // Read `messages` directly from this render's closure rather than a
-    // setMessages(prev => ...) updater — the updater's own callback isn't
-    // guaranteed to run synchronously, so a `history` variable assigned
-    // inside one and read right after could still be stale (e.g. empty),
-    // which was silently sending {messages: []} and tripping the API's
-    // "Missing messages" validation.
+    if (session !== sessionRef.current || !activeId) return;
+    const convId = activeId;
+    const userMessage: ChatMessage = {
+      id: newMessageId(),
+      role: "user",
+      content: text,
+      source: "voice",
+      createdAt: now(),
+    };
+    // Read the active conversation's messages directly from this render's
+    // closure rather than a setConversations(prev => ...) updater — the
+    // updater's own callback isn't guaranteed to run synchronously, so a
+    // `history` variable assigned inside one and read right after could
+    // still be stale (e.g. empty), which was silently sending
+    // {messages: []} and tripping the API's "Missing messages" validation.
     const history = [...messages, userMessage];
-    setMessages(history);
+    updateConversationMessages(convId, history);
     setConfirmText("");
     setPhase("answering");
 
@@ -366,8 +439,9 @@ export default function VoicePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          conversationId: conversationIdRef.current,
+          conversationId: convId,
           messages: history.map((m) => ({ role: m.role, content: m.content })),
+          source: "voice",
         }),
       });
       const data = await res.json();
@@ -382,7 +456,7 @@ export default function VoicePage() {
         status: res.ok ? data.status : "declined",
         createdAt: now(),
       };
-      setMessages((prev) => [...prev, assistantMessage]);
+      updateConversationMessages(convId, [...history, assistantMessage]);
       await speak(assistantMessage.content, session);
     } catch {
       if (session !== sessionRef.current) return;
@@ -393,9 +467,30 @@ export default function VoicePage() {
         status: "declined",
         createdAt: now(),
       };
-      setMessages((prev) => [...prev, assistantMessage]);
+      updateConversationMessages(convId, [...history, assistantMessage]);
       await speak(assistantMessage.content, session);
     }
+  }
+
+  /** Pure update relative to `prev` — safe to call from a setState updater
+   * (unlike the `history` pattern above, this never needs to be read back
+   * synchronously afterward). */
+  function updateConversationMessages(conversationId: string, messages: ChatMessage[]) {
+    setConversations((prev) => {
+      const existing = prev.find((c) => c.id === conversationId);
+      const base: Conversation = existing ?? { id: conversationId, title: "New conversation", messages: [], createdAt: now(), updatedAt: now() };
+      const firstUser = messages.find((m) => m.role === "user");
+      const updated: Conversation = {
+        ...base,
+        title:
+          base.title === "New conversation" && firstUser
+            ? firstUser.content.slice(0, 42) + (firstUser.content.length > 42 ? "…" : "")
+            : base.title,
+        messages,
+        updatedAt: now(),
+      };
+      return upsertConversation(prev, updated);
+    });
   }
 
   async function speak(text: string, session: number) {
@@ -451,15 +546,17 @@ export default function VoicePage() {
   }
 
   function handleVote(message: ChatMessage, vote: Vote) {
+    if (!activeId) return;
     const nextVote = message.vote === vote ? undefined : vote;
-    setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, vote: nextVote } : m)));
+    const nextMessages = messages.map((m) => (m.id === message.id ? { ...m, vote: nextVote } : m));
+    updateConversationMessages(activeId, nextMessages);
     if (nextVote) {
       fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messageId: message.id,
-          conversationId: conversationIdRef.current,
+          conversationId: activeId,
           question: messages[messages.indexOf(message) - 1]?.content ?? "",
           answer: message.content,
           status: message.status,
@@ -486,7 +583,7 @@ export default function VoicePage() {
           <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-[#145a4499]">
             What language will you speak?
           </p>
-          <LanguageToggle language={language} onChange={setLanguage} className="mt-2 justify-center" />
+          <LanguageToggle language={language} onChange={setLanguage} className="mt-2" />
           <button
             onClick={() => {
               setStarted(true);
@@ -507,121 +604,141 @@ export default function VoicePage() {
   }
 
   return (
-    <div className="geo-pattern flex h-dvh flex-col overflow-hidden bg-cream">
-      <header className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
-        <Link
-          href="/chat"
-          className="flex items-center gap-1.5 rounded-lg border border-[#0f3d301a] bg-[#ffffffb2] px-3 py-1.5 text-xs font-medium text-emerald-900 transition hover:border-[#c99a3d80]"
-        >
-          <Keyboard className="h-3.5 w-3.5" />
-          Type instead
-        </Link>
-        <div className="text-center">
-          <h1 className="font-display text-lg italic leading-none text-emerald-950">Deen Guide</h1>
-          <DateBadge className="mt-0.5 text-[11px] text-[#145a4499]" />
-        </div>
-        <button
-          onClick={startOver}
-          className="flex items-center gap-1.5 rounded-lg border border-[#0f3d301a] bg-[#ffffffb2] px-3 py-1.5 text-xs font-medium text-emerald-900 transition hover:border-[#c99a3d80]"
-        >
-          <RotateCcw className="h-3.5 w-3.5" />
-          Start Over
-        </button>
-      </header>
-      <div className="arabesque-divider" />
+    <div className="flex h-dvh overflow-hidden bg-cream">
+      <Sidebar
+        conversations={conversations}
+        activeId={activeId}
+        onNew={startNewConversation}
+        onSelect={selectConversation}
+        onDelete={handleDeleteConversation}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-5 sm:px-6">
-        <div className="mx-auto max-w-2xl space-y-4">
-          {messages.length === 0 && (
-            <div className="space-y-4">
-              <Disclaimer />
-              <div>
-                <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-[#145a4499]">
-                  Or tap a question to ask it
-                </p>
-                <SuggestionChips onSelect={askDirectly} className="stagger-in flex flex-wrap gap-2" />
+      <div className="geo-pattern flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="rounded-lg p-1.5 text-emerald-900 hover:bg-emerald-100 lg:hidden"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <Link
+              href="/chat"
+              className="flex items-center gap-1.5 rounded-lg border border-[#0f3d301a] bg-[#ffffffb2] px-3 py-1.5 text-xs font-medium text-emerald-900 transition hover:border-[#c99a3d80]"
+            >
+              <Keyboard className="h-3.5 w-3.5" />
+              Type instead
+            </Link>
+          </div>
+          <div className="text-center">
+            <h1 className="font-display text-lg italic leading-none text-emerald-950">Deen Guide</h1>
+            <DateBadge className="mt-0.5 text-[11px] text-[#145a4499]" />
+          </div>
+          <button
+            onClick={startNewConversation}
+            className="flex items-center gap-1.5 rounded-lg border border-[#0f3d301a] bg-[#ffffffb2] px-3 py-1.5 text-xs font-medium text-emerald-900 transition hover:border-[#c99a3d80]"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Start Over
+          </button>
+        </header>
+        <div className="arabesque-divider" />
+
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-5 sm:px-6">
+          <div className="mx-auto max-w-2xl space-y-4">
+            {messages.length === 0 && (
+              <div className="space-y-4">
+                <Disclaimer />
+                <div>
+                  <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-[#145a4499]">
+                    Or tap a question to ask it
+                  </p>
+                  <SuggestionChips onSelect={askDirectly} className="stagger-in flex flex-wrap gap-2" />
+                </div>
               </div>
-            </div>
-          )}
-          {messages.map((m) => (
-            <MessageBubble
-              key={m.id}
-              message={m}
-              onSuggestedQuestion={askDirectly}
-              onVote={m.role === "assistant" ? (vote) => handleVote(m, vote) : undefined}
-            />
-          ))}
+            )}
+            {messages.map((m) => (
+              <MessageBubble
+                key={m.id}
+                message={m}
+                onSuggestedQuestion={askDirectly}
+                onVote={m.role === "assistant" ? (vote) => handleVote(m, vote) : undefined}
+              />
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div className="border-t border-[#0f3d301a] bg-white px-4 py-6 sm:px-6">
-        <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
-          {phase === "confirming" ? (
-            <>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#145a4499]">You asked</p>
-              <p className="font-display text-xl italic text-emerald-950">&ldquo;{confirmText}&rdquo;</p>
-              <button
-                onClick={cancelConfirm}
-                className="text-xs font-medium text-[#1a6e53b2] underline underline-offset-2 hover:text-emerald-900"
-              >
-                That&rsquo;s not right — cancel
-              </button>
-            </>
-          ) : phase === "error" ? (
-            <>
-              <button
-                onClick={needsManualRetry ? beginListening : undefined}
-                disabled={!needsManualRetry}
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-red-600 disabled:opacity-80"
-              >
-                <MicOff className="h-7 w-7" />
-              </button>
-              <p className="text-sm font-medium text-red-700">{errorText}</p>
-              {needsManualRetry && <p className="text-xs text-red-600/70">Tap the icon above to try again</p>}
-            </>
-          ) : (
-            <>
-              {(() => {
-                const stoppable = phase === "recording" || phase === "speaking";
-                return (
-                  <button
-                    type="button"
-                    onClick={phase === "recording" ? stopRecording : phase === "speaking" ? stopSpeaking : undefined}
-                    disabled={!stoppable}
-                    className={`flex h-24 w-24 items-center justify-center rounded-full shadow-lg transition disabled:cursor-default ${
-                      phase === "recording"
-                        ? "recording-pulse bg-red-500 text-white"
-                        : "bg-emerald-800 text-white"
-                    } ${stoppable ? "cursor-pointer hover:scale-105" : ""}`}
-                  >
-                    {phase === "recording" ? (
-                      <Ear className="h-9 w-9" />
-                    ) : phase === "transcribing" || phase === "answering" ? (
-                      <Loader2 className="h-9 w-9 animate-spin" />
-                    ) : phase === "speaking" ? (
-                      <Volume2 className="h-9 w-9" />
-                    ) : (
-                      <Mic className="h-9 w-9" />
-                    )}
-                  </button>
-                );
-              })()}
-              <p className="text-sm font-medium text-emerald-900">
-                {phase === "recording"
-                  ? "Listening… (tap to stop)"
-                  : phase === "transcribing"
-                    ? "Understanding what you said…"
-                    : phase === "answering"
-                      ? "Finding your answer…"
-                      : phase === "speaking"
-                        ? "Answering… (tap to stop)"
-                        : "Getting ready to listen…"}
-              </p>
-              {(phase === "idle" || phase === "recording") && (
-                <LanguageToggle language={language} onChange={setLanguage} />
-              )}
-            </>
-          )}
+        <div className="border-t border-[#0f3d301a] bg-white px-4 py-6 sm:px-6">
+          <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
+            {phase === "confirming" ? (
+              <>
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#145a4499]">You asked</p>
+                <p className="font-display text-xl italic text-emerald-950">&ldquo;{confirmText}&rdquo;</p>
+                <button
+                  onClick={cancelConfirm}
+                  className="text-xs font-medium text-[#1a6e53b2] underline underline-offset-2 hover:text-emerald-900"
+                >
+                  That&rsquo;s not right — cancel
+                </button>
+              </>
+            ) : phase === "error" ? (
+              <>
+                <button
+                  onClick={needsManualRetry ? beginListening : undefined}
+                  disabled={!needsManualRetry}
+                  className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-red-600 disabled:opacity-80"
+                >
+                  <MicOff className="h-7 w-7" />
+                </button>
+                <p className="text-sm font-medium text-red-700">{errorText}</p>
+                {needsManualRetry && <p className="text-xs text-red-600/70">Tap the icon above to try again</p>}
+              </>
+            ) : (
+              <>
+                {(() => {
+                  const stoppable = phase === "recording" || phase === "speaking";
+                  return (
+                    <button
+                      type="button"
+                      onClick={phase === "recording" ? stopRecording : phase === "speaking" ? stopSpeaking : undefined}
+                      disabled={!stoppable}
+                      className={`flex h-24 w-24 items-center justify-center rounded-full shadow-lg transition disabled:cursor-default ${
+                        phase === "recording"
+                          ? "recording-pulse bg-red-500 text-white"
+                          : "bg-emerald-800 text-white"
+                      } ${stoppable ? "cursor-pointer hover:scale-105" : ""}`}
+                    >
+                      {phase === "recording" ? (
+                        <Ear className="h-9 w-9" />
+                      ) : phase === "transcribing" || phase === "answering" ? (
+                        <Loader2 className="h-9 w-9 animate-spin" />
+                      ) : phase === "speaking" ? (
+                        <Volume2 className="h-9 w-9" />
+                      ) : (
+                        <Mic className="h-9 w-9" />
+                      )}
+                    </button>
+                  );
+                })()}
+                <p className="text-sm font-medium text-emerald-900">
+                  {phase === "recording"
+                    ? "Listening… (tap to stop)"
+                    : phase === "transcribing"
+                      ? "Understanding what you said…"
+                      : phase === "answering"
+                        ? "Finding your answer…"
+                        : phase === "speaking"
+                          ? "Answering… (tap to stop)"
+                          : "Getting ready to listen…"}
+                </p>
+                {(phase === "idle" || phase === "recording") && (
+                  <LanguageToggle language={language} onChange={setLanguage} />
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

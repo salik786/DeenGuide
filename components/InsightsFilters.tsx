@@ -30,11 +30,13 @@ export function InsightsFilters({
   status,
   vote,
   date,
+  source,
 }: {
   accessKey: string;
   status: string;
   vote: string;
   date: string;
+  source: string;
 }) {
   return (
     <form method="get" className="mb-6 flex flex-wrap items-center gap-2">
@@ -47,6 +49,15 @@ export function InsightsFilters({
           { value: "verified", label: "Verified" },
           { value: "unverified", label: "Not verified" },
           { value: "declined", label: "Declined" },
+        ]}
+      />
+      <Select
+        name="source"
+        defaultValue={source}
+        options={[
+          { value: "all", label: "Voice + Text" },
+          { value: "voice", label: "🎙 Voice only" },
+          { value: "text", label: "⌨ Text only" },
         ]}
       />
       <Select

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ThumbsUp, ThumbsDown, Lock, Eye, Trash2 } from "lucide-react";
+import { ArrowLeft, ThumbsUp, ThumbsDown, Lock, Eye, Trash2, Mic, Keyboard } from "lucide-react";
 import { getRecentTranscripts, getAllFeedback, isDbConfigured } from "@/lib/db";
 import { InsightsFilters } from "@/components/InsightsFilters";
 import { now } from "@/lib/storage";
@@ -18,6 +18,16 @@ const STATUS_COLOR: Record<string, string> = {
   verified: "bg-[#1a6e531a] text-emerald-700",
   unverified: "bg-[#f59e0b26] text-amber-700",
   declined: "bg-[#dab55c33] text-gold-700",
+};
+
+const SOURCE_LABEL: Record<string, string> = {
+  voice: "Voice",
+  text: "Text",
+};
+
+const SOURCE_COLOR: Record<string, string> = {
+  voice: "bg-[#c99a3d26] text-gold-700",
+  text: "bg-[#0f3d301a] text-emerald-900",
 };
 
 const PAGE_SIZE = 20;
@@ -42,6 +52,7 @@ type SearchParams = {
   status?: string;
   vote?: string;
   date?: string;
+  source?: string;
   page?: string;
 };
 
@@ -103,6 +114,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
   const statusFilter = params.status || "all";
   const voteFilter = params.vote || "all";
   const dateFilter = params.date || "all";
+  const sourceFilter = params.source || "all";
   const cutoff = dateFilter !== "all" && DATE_RANGES[dateFilter] ? now() - DATE_RANGES[dateFilter] : null;
 
   const filtered = rows.filter((r) => {
@@ -110,6 +122,9 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
     if (voteFilter === "up" && r.vote !== "up") return false;
     if (voteFilter === "down" && r.vote !== "down") return false;
     if (voteFilter === "none" && r.vote) return false;
+    // Rows logged before the source tag existed have no `source` field at
+    // all — treat those as "text" (the only channel that existed then).
+    if (sourceFilter !== "all" && (r.source || "text") !== sourceFilter) return false;
     if (cutoff !== null && r.createdAt < cutoff) return false;
     return true;
   });
@@ -147,7 +162,13 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
         </div>
 
         <div className="mt-6">
-          <InsightsFilters accessKey={params.key || ""} status={statusFilter} vote={voteFilter} date={dateFilter} />
+          <InsightsFilters
+            accessKey={params.key || ""}
+            status={statusFilter}
+            vote={voteFilter}
+            date={dateFilter}
+            source={sourceFilter}
+          />
         </div>
 
         {pageRows.length === 0 ? (
@@ -170,6 +191,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
                 <tr className="border-b border-[#0f3d301a] bg-[#f0f8f399] text-left text-xs uppercase tracking-wide text-[#145a4499]">
                   <th className="w-36 px-3 py-2.5 font-semibold">Date</th>
                   <th className="w-28 px-3 py-2.5 font-semibold">Status</th>
+                  <th className="w-20 px-3 py-2.5 font-semibold">Source</th>
                   <th className="w-16 px-3 py-2.5 font-semibold">Vote</th>
                   <th className="px-3 py-2.5 font-semibold">Question</th>
                   <th className="w-24 px-3 py-2.5 font-semibold">Actions</th>
@@ -182,6 +204,18 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
                     <td className="px-3 py-3">
                       <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_COLOR[r.status]}`}>
                         {STATUS_LABEL[r.status]}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${SOURCE_COLOR[r.source || "text"]}`}
+                      >
+                        {(r.source || "text") === "voice" ? (
+                          <Mic className="h-3 w-3" />
+                        ) : (
+                          <Keyboard className="h-3 w-3" />
+                        )}
+                        {SOURCE_LABEL[r.source || "text"]}
                       </span>
                     </td>
                     <td className="px-3 py-3">

@@ -1,5 +1,5 @@
 import { Redis } from "@upstash/redis";
-import type { AnswerStatus, WebSource } from "@/lib/types";
+import type { AnswerStatus, MessageSource, WebSource } from "@/lib/types";
 
 // Supports both naming conventions: KV_REST_API_* (the original Vercel KV
 // names, preserved for backward compatibility after Vercel's Dec 2024
@@ -33,6 +33,7 @@ export interface TranscriptRecord {
   status: AnswerStatus;
   citations: CitationSummary[];
   webSources: WebSource[];
+  source: MessageSource;
   createdAt: number;
 }
 

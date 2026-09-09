@@ -51,6 +51,12 @@ export type AnswerStatus = "verified" | "unverified" | "declined";
 
 export type Vote = "up" | "down";
 
+/** Which input channel a question came in on — /chat (typed, with an
+ * optional manual mic-to-textbox transcription) vs /voice (fully
+ * hands-free). Shown as a tag in Insights so questions from the two are
+ * easy to tell apart even though they share the same conversation list. */
+export type MessageSource = "text" | "voice";
+
 export interface ChatMessage {
   id: string;
   role: ChatRole;
@@ -59,6 +65,7 @@ export interface ChatMessage {
   webSources?: WebSource[];
   status?: AnswerStatus;
   vote?: Vote;
+  source?: MessageSource;
   createdAt: number;
 }
 

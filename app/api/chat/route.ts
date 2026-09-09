@@ -6,7 +6,7 @@ import { TOPICS, getFullCorpus } from "@/lib/corpus";
 import { buildSystemPrompt, DECLINED_MESSAGE, TRUSTED_SEARCH_DOMAINS } from "@/lib/systemPrompt";
 import { applyGuardrails } from "@/lib/guardrails";
 import { logTranscript } from "@/lib/db";
-import type { WebSource } from "@/lib/types";
+import type { MessageSource, WebSource } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -19,7 +19,7 @@ interface IncomingMessage {
 }
 
 export async function POST(req: NextRequest) {
-  let body: { messages?: IncomingMessage[]; conversationId?: string };
+  let body: { messages?: IncomingMessage[]; conversationId?: string; source?: MessageSource };
   try {
     body = await req.json();
   } catch {
@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { messages, conversationId } = body;
+  const source: MessageSource = body.source === "voice" ? "voice" : "text";
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: "Missing messages." }, { status: 400 });
@@ -117,6 +118,7 @@ export async function POST(req: NextRequest) {
           url: c.source.url,
         })),
         webSources: result.webSources,
+        source,
         createdAt: Date.now(),
       }),
     );

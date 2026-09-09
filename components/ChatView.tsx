@@ -68,6 +68,7 @@ export function ChatView({
         body: JSON.stringify({
           conversationId: conversation.id,
           messages: withUser.messages.map((m) => ({ role: m.role, content: m.content })),
+          source: "text",
         }),
       });
 

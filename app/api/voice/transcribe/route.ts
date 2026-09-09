@@ -14,6 +14,12 @@ export async function POST(req: NextRequest) {
 
   const formData = await req.formData();
   const audioFile = formData.get("audio");
+  // Optional ISO-639-1 code (e.g. "en", "ur"). Whisper auto-detects the
+  // spoken language when this is omitted, but auto-detection is unreliable
+  // on short clips and can lock onto the wrong language entirely (English
+  // speech transcribed as Urdu text, then answered in Urdu) — pinning it
+  // when the caller knows which language to expect avoids that.
+  const language = formData.get("language");
 
   if (!(audioFile instanceof File)) {
     return NextResponse.json({ error: "No audio file provided." }, { status: 400 });
@@ -24,6 +30,7 @@ export async function POST(req: NextRequest) {
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
       model: "whisper-1",
+      ...(typeof language === "string" && language ? { language } : {}),
     });
 
     return NextResponse.json({ text: transcription.text });

@@ -54,6 +54,33 @@ function truncateForSpeech(text: string, maxChars = SPEECH_LENGTH_BUDGET): strin
   return result;
 }
 
+function LanguageToggle({
+  language,
+  onChange,
+  className = "",
+}: {
+  language: "en" | "ur";
+  onChange: (lang: "en" | "ur") => void;
+  className?: string;
+}) {
+  return (
+    <div className={`flex items-center gap-1 rounded-full border border-[#0f3d301a] bg-white p-1 ${className}`}>
+      {(["en", "ur"] as const).map((code) => (
+        <button
+          key={code}
+          type="button"
+          onClick={() => onChange(code)}
+          className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+            language === code ? "bg-emerald-800 text-white" : "text-emerald-900 hover:bg-emerald-50"
+          }`}
+        >
+          {code === "en" ? "English" : "اردو"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** A big-button, fully hands-free voice screen for the event kiosk tablet,
  * where typing (and repeatedly tapping a mic button) is impractical. One
  * tap to begin, then it loops on its own: listen (auto-stops once you stop
@@ -71,6 +98,11 @@ export default function VoicePage() {
   const [needsManualRetry, setNeedsManualRetry] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [confirmText, setConfirmText] = useState("");
+  // Whisper auto-detects the spoken language when none is given, but that's
+  // unreliable on short clips and can lock onto the wrong language entirely
+  // (English speech transcribed as Urdu text, then answered in Urdu) — so
+  // instead of guessing, the visitor picks which language they're speaking.
+  const [language, setLanguage] = useState<"en" | "ur">("en");
 
   const conversationIdRef = useRef(newConversationId());
   // Bumped by startOver() so any in-flight async step (recording, VAD,
@@ -289,6 +321,7 @@ export default function VoicePage() {
       const blob = new Blob(chunksRef.current, { type: mimeType || "audio/webm" });
       const formData = new FormData();
       formData.append("audio", blob, "recording.webm");
+      formData.append("language", language);
       const res = await fetch("/api/voice/transcribe", { method: "POST", body: formData });
       if (session !== sessionRef.current) return;
       if (!res.ok) throw new Error("transcription failed");
@@ -404,6 +437,19 @@ export default function VoicePage() {
     }
   }
 
+  /** Lets a visitor cut off a long answer instead of waiting it out —
+   * pausing doesn't fire the audio element's "ended" event, so this drives
+   * the idle/re-listen transition itself. */
+  function stopSpeaking() {
+    const session = sessionRef.current;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setPhase("idle");
+    scheduleRelisten(session, 200);
+  }
+
   function handleVote(message: ChatMessage, vote: Vote) {
     const nextVote = message.vote === vote ? undefined : vote;
     setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, vote: nextVote } : m)));
@@ -437,6 +483,10 @@ export default function VoicePage() {
             Tap once to begin — after that, just talk. It listens, answers, and reads the answer
             back automatically.
           </p>
+          <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-[#145a4499]">
+            What language will you speak?
+          </p>
+          <LanguageToggle language={language} onChange={setLanguage} className="mt-2 justify-center" />
           <button
             onClick={() => {
               setStarted(true);
@@ -531,34 +581,45 @@ export default function VoicePage() {
             </>
           ) : (
             <>
-              <div
-                className={`flex h-24 w-24 items-center justify-center rounded-full shadow-lg transition ${
-                  phase === "recording"
-                    ? "recording-pulse bg-red-500 text-white"
-                    : "bg-emerald-800 text-white"
-                }`}
-              >
-                {phase === "recording" ? (
-                  <Ear className="h-9 w-9" />
-                ) : phase === "transcribing" || phase === "answering" ? (
-                  <Loader2 className="h-9 w-9 animate-spin" />
-                ) : phase === "speaking" ? (
-                  <Volume2 className="h-9 w-9" />
-                ) : (
-                  <Mic className="h-9 w-9" />
-                )}
-              </div>
+              {(() => {
+                const stoppable = phase === "recording" || phase === "speaking";
+                return (
+                  <button
+                    type="button"
+                    onClick={phase === "recording" ? stopRecording : phase === "speaking" ? stopSpeaking : undefined}
+                    disabled={!stoppable}
+                    className={`flex h-24 w-24 items-center justify-center rounded-full shadow-lg transition disabled:cursor-default ${
+                      phase === "recording"
+                        ? "recording-pulse bg-red-500 text-white"
+                        : "bg-emerald-800 text-white"
+                    } ${stoppable ? "cursor-pointer hover:scale-105" : ""}`}
+                  >
+                    {phase === "recording" ? (
+                      <Ear className="h-9 w-9" />
+                    ) : phase === "transcribing" || phase === "answering" ? (
+                      <Loader2 className="h-9 w-9 animate-spin" />
+                    ) : phase === "speaking" ? (
+                      <Volume2 className="h-9 w-9" />
+                    ) : (
+                      <Mic className="h-9 w-9" />
+                    )}
+                  </button>
+                );
+              })()}
               <p className="text-sm font-medium text-emerald-900">
                 {phase === "recording"
-                  ? "Listening…"
+                  ? "Listening… (tap to stop)"
                   : phase === "transcribing"
                     ? "Understanding what you said…"
                     : phase === "answering"
                       ? "Finding your answer…"
                       : phase === "speaking"
-                        ? "Answering…"
+                        ? "Answering… (tap to stop)"
                         : "Getting ready to listen…"}
               </p>
+              {(phase === "idle" || phase === "recording") && (
+                <LanguageToggle language={language} onChange={setLanguage} />
+              )}
             </>
           )}
         </div>

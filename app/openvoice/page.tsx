@@ -158,16 +158,23 @@ export default function OpenVoicePage() {
       await pc.setLocalDescription(offer);
       await waitForIceGatheringComplete(pc);
 
-      const formData = new FormData();
-      formData.append("sdp", new Blob([pc.localDescription?.sdp ?? ""], { type: "application/sdp" }));
-
+      // When only `sdp` is sent (no `session` override), OpenAI's own SDK
+      // sends it as a raw application/sdp body, not multipart form-data —
+      // confirmed by reading node_modules/openai/internal/multipart-encoding.js's
+      // single-field special case, after a wrapped-FormData version of this
+      // got a 400 from the real API.
       const callRes = await fetch(REALTIME_CALLS_URL, {
         method: "POST",
-        headers: { Authorization: `Bearer ${ephemeralKey}` },
-        body: formData,
+        headers: {
+          Authorization: `Bearer ${ephemeralKey}`,
+          "Content-Type": "application/sdp",
+        },
+        body: pc.localDescription?.sdp ?? "",
       });
       if (!callRes.ok) {
-        throw new Error(`Realtime connection failed (${callRes.status}).`);
+        const bodyText = await callRes.text().catch(() => "");
+        console.error("Realtime /calls rejected:", callRes.status, bodyText);
+        throw new Error(`Realtime connection failed (${callRes.status}): ${bodyText.slice(0, 300)}`);
       }
       const answerSdp = await callRes.text();
       await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });

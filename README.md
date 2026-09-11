@@ -31,12 +31,15 @@ design optimizes for **not hallucinating with confidence** over being clever:
    page) — see `/scholar-review` to read every one of them in one place before this goes live.
    Claude is explicitly told not to use web search or general knowledge for a `[[VERIFIED]]`
    response; it's the static corpus or nothing.
-3. **Not-verified answers can use live web search, but only on 6 trusted domains.** See
-   `TRUSTED_SEARCH_DOMAINS` in `lib/systemPrompt.ts`: sunnah.com, quran.com, islamqa.info,
-   islamweb.net, seekersguidance.org, yaqeeninstitute.org. The Anthropic `web_search_20260209`
-   server tool is domain-restricted to exactly that list (`allowed_domains`), so even an
-   unverified answer can only ever cite a real page from a source we picked in advance — never
-   an arbitrary site. Real URLs found are shown under "Checked while answering."
+3. **Not-verified answers can use live web search, but only on 10 trusted domains.** See
+   `TRUSTED_SEARCH_DOMAINS` in `lib/systemPrompt.ts`. Four scholar-recommended sites are checked
+   first (`PRIORITY_SEARCH_DOMAINS`): AMJA (amjaonline.org), the International Islamic Fiqh
+   Academy (iifa-aifi.org), IslamOnline (islamonline.net), and the European Council for Fatwa
+   and Research (e-cfr.org) — falling back to sunnah.com, quran.com, islamqa.info, islamweb.net,
+   seekersguidance.org, and yaqeeninstitute.org only if those don't cover it. The Anthropic
+   `web_search_20260209` server tool is domain-restricted to exactly that list (`allowed_domains`),
+   so even an unverified answer can only ever cite a real page from a source we picked in
+   advance — never an arbitrary site. Real URLs found are shown under "Checked while answering."
 4. **The model is told never to fabricate a specific reference or number.** Under
    `[[UNVERIFIED]]`, it must not state a precise hadith number/narrator chain from memory (only
    from an actual search result), and must always decline (not guess) at any specific personal

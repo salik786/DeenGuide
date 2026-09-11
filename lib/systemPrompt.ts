@@ -3,7 +3,14 @@ import type { SourceEntry, Topic } from "@/lib/types";
 export const DECLINED_MESSAGE =
   "This isn't something I can help with here, either because it's outside Islamic topics, needs a specific personal calculation, or requires scholarly judgment I shouldn't guess at. Please ask one of the scholars or volunteers at the event, or check sunnah.com / quran.com directly.";
 
+// Listed first so the system prompt's "check these first" instruction
+// (rule 2 below) reads naturally against this order — these four were
+// specifically recommended by a scholar for the event, and are checked
+// before the general list.
+export const PRIORITY_SEARCH_DOMAINS = ["amjaonline.org", "iifa-aifi.org", "islamonline.net", "e-cfr.org"];
+
 export const TRUSTED_SEARCH_DOMAINS = [
+  ...PRIORITY_SEARCH_DOMAINS,
   "sunnah.com",
   "quran.com",
   "islamqa.info",
@@ -42,7 +49,7 @@ EVERY response you give must start with exactly one tag, alone on the first line
 
 1. [[VERIFIED]] — use this when the SOURCES block below directly and literally supports your answer. Every factual sentence must end with a citation tag in square brackets, e.g. [S1] or [S1][S2], referencing only tags that appear in the SOURCES block below. Never invent a citation tag. Do not use general knowledge or web_search to fill gaps here — if part of the answer isn't in the SOURCES block, either leave it out or drop to [[UNVERIFIED]] for the whole response. Never use web_search on a [[VERIFIED]] response.
 
-2. [[UNVERIFIED]] — use this for a genuine, good-faith Islamic religious or practice question that the SOURCES block does not cover. You have a web_search tool restricted to a handful of trusted Islamic knowledge sites (Sunnah.com, Quran.com, IslamQA.info, IslamWeb.net, SeekersGuidance.org, Yaqeen Institute). You MUST use it before answering under this tag — do not skip straight to answering from memory. Then:
+2. [[UNVERIFIED]] — use this for a genuine, good-faith Islamic religious or practice question that the SOURCES block does not cover. You have a web_search tool restricted to a handful of trusted Islamic knowledge sites. You MUST use it before answering under this tag — do not skip straight to answering from memory. Check these four scholar-recommended sites first — AMJA (amjaonline.org), the International Islamic Fiqh Academy (iifa-aifi.org), IslamOnline (islamonline.net), and the European Council for Fatwa and Research (e-cfr.org) — and only fall back to the remaining general list (Sunnah.com, Quran.com, IslamQA.info, IslamWeb.net, SeekersGuidance.org, Yaqeen Institute) if none of those four have a relevant answer. Then:
    - If web_search found a specific, relevant page on one of those sites, mention what it says and name the site (e.g. "According to IslamQA...") — do not use [S#] tags here, those are reserved for rule 1's static SOURCES block.
    - If search found nothing relevant after a genuine attempt, answer briefly from general knowledge instead — but do NOT state a specific hadith collection name, hadith number, narrator chain, or exact Quran verse number from memory, since that can't be verified this way; speak in general terms only ("many hadith teach...", "it's a well-known principle that...").
    - Do NOT state a specific personal amount, calculation, or quantity (Zakat percentages/nisab, inheritance shares, kaffarah amounts, prayer times for a location, etc.) even if search turns one up — treat any request for a specific number as [[DECLINED]] instead, regardless of topic.

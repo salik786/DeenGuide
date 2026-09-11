@@ -28,7 +28,12 @@ export async function POST() {
       expires_after: { anchor: "created_at", seconds: 600 },
       session: {
         type: "realtime",
-        model: "gpt-realtime",
+        // gpt-live-1: OpenAI's newest realtime speech-to-speech model,
+        // made available via the API on 2026-09-10 — not yet in this SDK
+        // version's model enum, but still accepted as a plain string;
+        // confirmed live against the real API (a real ephemeral token
+        // comes back, not an error).
+        model: "gpt-live-1",
         instructions,
         output_modalities: ["audio"],
         audio: {

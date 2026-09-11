@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ThumbsUp, ThumbsDown, Lock, Eye, Trash2, Mic, Keyboard } from "lucide-react";
+import { ArrowLeft, ThumbsUp, ThumbsDown, Lock, Eye, Trash2, Mic, Keyboard, Zap } from "lucide-react";
 import { getRecentTranscripts, getAllFeedback, isDbConfigured } from "@/lib/db";
 import { InsightsFilters } from "@/components/InsightsFilters";
 import { now } from "@/lib/storage";
@@ -23,11 +23,19 @@ const STATUS_COLOR: Record<string, string> = {
 const SOURCE_LABEL: Record<string, string> = {
   voice: "Voice",
   text: "Text",
+  openvoice: "OpenVoice",
 };
 
 const SOURCE_COLOR: Record<string, string> = {
   voice: "bg-[#c99a3d26] text-gold-700",
   text: "bg-[#0f3d301a] text-emerald-900",
+  openvoice: "bg-[#f59e0b26] text-amber-700",
+};
+
+const SOURCE_ICON: Record<string, typeof Mic> = {
+  voice: Mic,
+  text: Keyboard,
+  openvoice: Zap,
 };
 
 const PAGE_SIZE = 20;
@@ -207,16 +215,18 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
                       </span>
                     </td>
                     <td className="px-3 py-3">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${SOURCE_COLOR[r.source || "text"]}`}
-                      >
-                        {(r.source || "text") === "voice" ? (
-                          <Mic className="h-3 w-3" />
-                        ) : (
-                          <Keyboard className="h-3 w-3" />
-                        )}
-                        {SOURCE_LABEL[r.source || "text"]}
-                      </span>
+                      {(() => {
+                        const src = r.source || "text";
+                        const SourceIcon = SOURCE_ICON[src];
+                        return (
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${SOURCE_COLOR[src]}`}
+                          >
+                            <SourceIcon className="h-3 w-3" />
+                            {SOURCE_LABEL[src]}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-3 py-3">
                       {r.vote === "up" && <ThumbsUp className="h-4 w-4 text-emerald-700" fill="currentColor" />}

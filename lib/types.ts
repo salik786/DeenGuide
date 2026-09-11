@@ -51,11 +51,12 @@ export type AnswerStatus = "verified" | "unverified" | "declined";
 
 export type Vote = "up" | "down";
 
-/** Which input channel a question came in on — /chat (typed, with an
- * optional manual mic-to-textbox transcription) vs /voice (fully
- * hands-free). Shown as a tag in Insights so questions from the two are
- * easy to tell apart even though they share the same conversation list. */
-export type MessageSource = "text" | "voice";
+/** Which input channel a question came in on: /chat (typed, with an
+ * optional manual mic-to-textbox transcription), /voice (fully hands-free,
+ * Claude-guardrailed), or /openvoice (the experimental OpenAI Realtime
+ * speech-to-speech sandbox, ungrounded by code-level guardrails). Shown as
+ * a tag in Insights so questions from each are easy to tell apart. */
+export type MessageSource = "text" | "voice" | "openvoice";
 
 export interface ChatMessage {
   id: string;

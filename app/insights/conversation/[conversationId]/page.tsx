@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ThumbsUp, ThumbsDown, Lock, ExternalLink, Mic, Keyboard } from "lucide-react";
+import { ArrowLeft, ThumbsUp, ThumbsDown, Lock, ExternalLink, Mic, Keyboard, Zap } from "lucide-react";
 import { getTranscriptsByConversation, getAllFeedback, isDbConfigured } from "@/lib/db";
 
 export const metadata = {
@@ -21,11 +21,19 @@ const STATUS_COLOR: Record<string, string> = {
 const SOURCE_LABEL: Record<string, string> = {
   voice: "Voice",
   text: "Text",
+  openvoice: "OpenVoice",
 };
 
 const SOURCE_COLOR: Record<string, string> = {
   voice: "bg-[#c99a3d26] text-gold-700",
   text: "bg-[#0f3d301a] text-emerald-900",
+  openvoice: "bg-[#f59e0b26] text-amber-700",
+};
+
+const SOURCE_ICON: Record<string, typeof Mic> = {
+  voice: Mic,
+  text: Keyboard,
+  openvoice: Zap,
 };
 
 function stripCitationTags(text: string): string {
@@ -119,16 +127,18 @@ export default async function ConversationPage({
                         <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_COLOR[m.status]}`}>
                           {STATUS_LABEL[m.status]}
                         </span>
-                        <span
-                          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${SOURCE_COLOR[m.source || "text"]}`}
-                        >
-                          {(m.source || "text") === "voice" ? (
-                            <Mic className="h-3 w-3" />
-                          ) : (
-                            <Keyboard className="h-3 w-3" />
-                          )}
-                          {SOURCE_LABEL[m.source || "text"]}
-                        </span>
+                        {(() => {
+                          const src = m.source || "text";
+                          const SourceIcon = SOURCE_ICON[src];
+                          return (
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${SOURCE_COLOR[src]}`}
+                            >
+                              <SourceIcon className="h-3 w-3" />
+                              {SOURCE_LABEL[src]}
+                            </span>
+                          );
+                        })()}
                         {vote === "up" && <ThumbsUp className="h-3.5 w-3.5 text-emerald-700" fill="currentColor" />}
                         {vote === "down" && <ThumbsDown className="h-3.5 w-3.5 text-red-700" fill="currentColor" />}
                         <span className="text-xs text-[#145a4466]">{formatTime(m.createdAt)}</span>

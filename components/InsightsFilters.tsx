@@ -55,9 +55,10 @@ export function InsightsFilters({
         name="source"
         defaultValue={source}
         options={[
-          { value: "all", label: "Voice + Text" },
+          { value: "all", label: "All sources" },
           { value: "voice", label: "🎙 Voice only" },
           { value: "text", label: "⌨ Text only" },
+          { value: "openvoice", label: "⚡ OpenVoice only" },
         ]}
       />
       <Select

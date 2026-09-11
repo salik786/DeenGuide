@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Mic, Loader2, Volume2, PhoneOff, AlertTriangle, Keyboard, Ear } from "lucide-react";
+import { Mic, Loader2, PhoneOff, AlertTriangle, Keyboard, Ear, Square } from "lucide-react";
+import { newConversationId } from "@/lib/storage";
 
 type Phase = "idle" | "connecting" | "connected" | "error";
 type TurnRole = "user" | "assistant";
@@ -52,6 +53,14 @@ export default function OpenVoicePage() {
   const streamRef = useRef<MediaStream | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const turnsEndRef = useRef<HTMLDivElement>(null);
+  // One id per live call, so every turn logged during it groups into the
+  // same conversation in Insights (same idea as /chat and /voice).
+  const conversationIdRef = useRef<string>("");
+  // The most recently completed user turn's text — paired with the next
+  // assistant turn that finishes, to log a (question, answer) pair. Simple
+  // last-one-wins pairing; fine for this experimental page's normal
+  // back-and-forth, not meant to handle overlapping/interrupted turns.
+  const lastUserTextRef = useRef("");
 
   function disconnect() {
     dcRef.current?.close();
@@ -102,6 +111,7 @@ export default function OpenVoicePage() {
         break;
       case "conversation.item.input_audio_transcription.completed":
         if (event.item_id) upsertTurn(event.item_id, "user", event.transcript ?? "", true, true);
+        if (event.transcript) lastUserTextRef.current = event.transcript;
         break;
       case "response.created":
         setResponding(true);
@@ -111,6 +121,10 @@ export default function OpenVoicePage() {
         break;
       case "response.output_audio_transcript.done":
         if (event.item_id) upsertTurn(event.item_id, "assistant", event.transcript ?? "", true, true);
+        if (event.transcript && lastUserTextRef.current) {
+          void logTurn(lastUserTextRef.current, event.transcript);
+          lastUserTextRef.current = "";
+        }
         break;
       case "response.done":
         setResponding(false);
@@ -123,10 +137,20 @@ export default function OpenVoicePage() {
     }
   }
 
+  function logTurn(question: string, answer: string) {
+    fetch("/api/openvoice/log", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ conversationId: conversationIdRef.current, question, answer }),
+    }).catch(() => {});
+  }
+
   async function connect() {
     setPhase("connecting");
     setErrorText("");
     setTurns([]);
+    conversationIdRef.current = newConversationId();
+    lastUserTextRef.current = "";
     try {
       const sessionRes = await fetch("/api/openvoice/session", { method: "POST" });
       const sessionData = await sessionRes.json();
@@ -295,24 +319,29 @@ export default function OpenVoicePage() {
       {phase === "connected" && (
         <div className="border-t border-[#0f3d301a] bg-white px-4 py-5 sm:px-6">
           <div className="mx-auto flex max-w-2xl flex-col items-center gap-2 text-center">
-            <div
-              className={`flex h-16 w-16 items-center justify-center rounded-full shadow-lg transition ${
-                listening ? "recording-pulse bg-red-500 text-white" : responding ? "bg-emerald-800 text-white" : "bg-emerald-100 text-emerald-800"
+            <button
+              type="button"
+              onClick={responding ? stopSpeaking : undefined}
+              disabled={!responding}
+              className={`flex h-16 w-16 items-center justify-center rounded-full shadow-lg transition disabled:cursor-default ${
+                listening
+                  ? "recording-pulse bg-red-500 text-white"
+                  : responding
+                    ? "cursor-pointer bg-emerald-800 text-white hover:scale-105"
+                    : "bg-emerald-100 text-emerald-800"
               }`}
             >
-              {listening ? <Ear className="h-7 w-7" /> : responding ? <Volume2 className="h-7 w-7" /> : <Mic className="h-7 w-7" />}
-            </div>
+              {listening ? (
+                <Ear className="h-7 w-7" />
+              ) : responding ? (
+                <Square className="h-6 w-6" fill="currentColor" />
+              ) : (
+                <Mic className="h-7 w-7" />
+              )}
+            </button>
             <p className="text-xs font-medium text-emerald-900">
-              {listening ? "Listening…" : responding ? "Speaking…" : "Ready — just talk"}
+              {listening ? "Listening…" : responding ? "Speaking… (tap to stop)" : "Ready — just talk"}
             </p>
-            {responding && (
-              <button
-                onClick={stopSpeaking}
-                className="text-xs font-medium text-[#1a6e53b2] underline underline-offset-2 hover:text-emerald-900"
-              >
-                Stop
-              </button>
-            )}
           </div>
         </div>
       )}

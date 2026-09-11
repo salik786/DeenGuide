@@ -28,12 +28,16 @@ export async function POST() {
       expires_after: { anchor: "created_at", seconds: 600 },
       session: {
         type: "realtime",
-        // gpt-live-1: OpenAI's newest realtime speech-to-speech model,
-        // made available via the API on 2026-09-10 — not yet in this SDK
-        // version's model enum, but still accepted as a plain string;
-        // confirmed live against the real API (a real ephemeral token
-        // comes back, not an error).
-        model: "gpt-live-1",
+        // gpt-live-1 (OpenAI's newest voice model, released 2026-09-10) is
+        // NOT usable here — confirmed against the real API that it's a
+        // different product on a separate v1/live/sessions endpoint,
+        // explicitly incompatible with the Realtime API's WebRTC sessions
+        // this page uses (v1/realtime/*). Minting a client secret with
+        // that model name succeeds (validation is deferred), but the
+        // actual WebRTC connect then fails with "not supported in
+        // realtime mode". gpt-realtime is the right model for this
+        // integration path.
+        model: "gpt-realtime",
         instructions,
         output_modalities: ["audio"],
         audio: {

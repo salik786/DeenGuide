@@ -254,8 +254,8 @@ export default function OpenVoicePage() {
       <div className="mx-4 mt-3 flex items-start gap-2 rounded-xl border border-[#dab55c66] bg-[#f6e9c880] px-3 py-2.5 text-xs text-emerald-900 sm:mx-6">
         <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-600" />
         <p>
-          <span className="font-semibold">Experimental sandbox.</span> This uses OpenAI&rsquo;s live voice
-          model directly, with the corpus and rules given to it as instructions — unlike /chat and /voice,
+          <span className="font-semibold">Experimental sandbox.</span> This uses a live voice AI model
+          directly, with the corpus and rules given to it as instructions — unlike /chat and /voice,
           nothing here re-checks its citations in code before it speaks, since audio plays as it&rsquo;s
           generated. Treat anything it says as unverified, same as this app&rsquo;s own &ldquo;Not
           verified&rdquo; tier.

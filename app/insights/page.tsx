@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ArrowLeft, ThumbsUp, ThumbsDown, Lock, Eye, Trash2, Mic, Keyboard, Zap } from "lucide-react";
 import { getRecentTranscripts, getAllFeedback, isDbConfigured } from "@/lib/db";
 import { InsightsFilters } from "@/components/InsightsFilters";
+import { ExportButtons } from "@/components/ExportButtons";
+import { filterInsightsRows } from "@/lib/insightsFilter";
 import { now } from "@/lib/storage";
 
 export const metadata = {
@@ -39,11 +41,6 @@ const SOURCE_ICON: Record<string, typeof Mic> = {
 };
 
 const PAGE_SIZE = 20;
-const DATE_RANGES: Record<string, number> = {
-  today: 24 * 60 * 60 * 1000,
-  "7d": 7 * 24 * 60 * 60 * 1000,
-  "30d": 30 * 24 * 60 * 60 * 1000,
-};
 
 function formatTime(ts: number): string {
   return new Date(ts).toLocaleString("en-US", {
@@ -123,19 +120,8 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
   const voteFilter = params.vote || "all";
   const dateFilter = params.date || "all";
   const sourceFilter = params.source || "all";
-  const cutoff = dateFilter !== "all" && DATE_RANGES[dateFilter] ? now() - DATE_RANGES[dateFilter] : null;
 
-  const filtered = rows.filter((r) => {
-    if (statusFilter !== "all" && r.status !== statusFilter) return false;
-    if (voteFilter === "up" && r.vote !== "up") return false;
-    if (voteFilter === "down" && r.vote !== "down") return false;
-    if (voteFilter === "none" && r.vote) return false;
-    // Rows logged before the source tag existed have no `source` field at
-    // all — treat those as "text" (the only channel that existed then).
-    if (sourceFilter !== "all" && (r.source || "text") !== sourceFilter) return false;
-    if (cutoff !== null && r.createdAt < cutoff) return false;
-    return true;
-  });
+  const filtered = filterInsightsRows(rows, params, now());
 
   const page = Math.max(1, parseInt(params.page || "1", 10) || 1);
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -169,8 +155,15 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
           </span>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
           <InsightsFilters
+            accessKey={params.key || ""}
+            status={statusFilter}
+            vote={voteFilter}
+            date={dateFilter}
+            source={sourceFilter}
+          />
+          <ExportButtons
             accessKey={params.key || ""}
             status={statusFilter}
             vote={voteFilter}

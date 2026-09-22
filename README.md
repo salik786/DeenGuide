@@ -132,9 +132,13 @@ vars, the app still works completely normally — logging and feedback just sile
 **Viewing it:** open `/insights?key=<your INSIGHTS_KEY>`. This is not linked from anywhere in
 the app UI on purpose — treat the URL like a password and don't share it publicly, since it
 shows real questions people asked. The page is a filterable, paginated table (by status, by
-👍/👎, by date range); each row has a 👁 to view that question in the context of its full
-conversation (`/insights/conversation/[id]`, with the complete answer text and sources), and a
-🗑 to permanently delete that row (both its transcript entry and any feedback on it).
+source — text/voice/OpenVoice, by 👍/👎, by date range); each row has a 👁 to view that question
+in the context of its full conversation (`/insights/conversation/[id]`, with the complete answer
+text and sources), and a 🗑 to permanently delete that row (both its transcript entry and any
+feedback on it).
+
+**Exporting it:** the CSV/JSON buttons next to the filters (`/api/insights/export`) download
+exactly the rows the current filters show — same `key` gate as the page itself.
 
 ## How the conversation UI works
 

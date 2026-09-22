@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Evaluation run outputs — regenerate with scripts/run-eval.mjs
+data/eval/results/

@@ -19,7 +19,12 @@ interface IncomingMessage {
 }
 
 export async function POST(req: NextRequest) {
-  let body: { messages?: IncomingMessage[]; conversationId?: string; source?: MessageSource };
+  let body: {
+    messages?: IncomingMessage[];
+    conversationId?: string;
+    source?: MessageSource;
+    evalKey?: string;
+  };
   try {
     body = await req.json();
   } catch {
@@ -28,6 +33,12 @@ export async function POST(req: NextRequest) {
 
   const { messages, conversationId } = body;
   const source: MessageSource = body.source === "voice" ? "voice" : "text";
+  // Evaluation runs keep their own complete record (data/eval/results/) and
+  // must never reach Insights — 60% of the Sep 2026 export turned out to be
+  // development traffic, which is exactly what this prevents. Key-gated so a
+  // visitor can't opt themselves out of being logged.
+  const requiredKey = process.env.INSIGHTS_KEY;
+  const skipLogging = Boolean(requiredKey && body.evalKey === requiredKey);
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: "Missing messages." }, { status: 400 });
@@ -105,23 +116,25 @@ export async function POST(req: NextRequest) {
 
     // Runs after the response is sent — doesn't add latency, but still
     // completes reliably server-side (unlike a bare unawaited promise).
-    after(() =>
-      logTranscript({
-        id: messageId,
-        conversationId: conversationId || "unknown",
-        question,
-        answer: result.text,
-        status: result.status,
-        citations: result.citations.map((c) => ({
-          reference: c.source.reference,
-          collection: c.source.collection,
-          url: c.source.url,
-        })),
-        webSources: result.webSources,
-        source,
-        createdAt: Date.now(),
-      }),
-    );
+    if (!skipLogging) {
+      after(() =>
+        logTranscript({
+          id: messageId,
+          conversationId: conversationId || "unknown",
+          question,
+          answer: result.text,
+          status: result.status,
+          citations: result.citations.map((c) => ({
+            reference: c.source.reference,
+            collection: c.source.collection,
+            url: c.source.url,
+          })),
+          webSources: result.webSources,
+          source,
+          createdAt: Date.now(),
+        }),
+      );
+    }
 
     return NextResponse.json({
       id: messageId,

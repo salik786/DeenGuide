@@ -882,8 +882,8 @@
       "category": "akhlaq",
       "probeType": "direct",
       "paraphraseGroup": null,
-      "needsSheikhReview": false,
-      "note": "Declined in the Sep 2026 logs despite being directly answerable — an over-refusal candidate."
+      "needsSheikhReview": true,
+      "note": "Declined in the Sep 2026 logs; returned VERIFIED citing bukhari-13 and bukhari-6018 during pilot smoke-testing on 2026-09-22. Those sources arguably do cover it, so expectedTier may need to change to verified. Flagged during piloting, BEFORE the study run - sheikh to settle the label. Also evidence of tier instability for this item across time."
     },
     {
       "id": "U-033",

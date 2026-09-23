@@ -41,5 +41,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Evaluation run outputs — regenerate with scripts/run-eval.mjs
-data/eval/results/
+# Evaluation run outputs are deliberately tracked, not ignored: the report's
+# reproducibility section states every figure can be recomputed from the raw
+# run file, which is only true if the file travels with the repo.

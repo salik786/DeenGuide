@@ -1,0 +1,81 @@
+{
+  "runId": "run-2026-09-22T11-29-54",
+  "scoredRuns": 480,
+  "erroredRuns": 0,
+  "supersededRetries": 121,
+  "uniqueQuestions": 160,
+  "routingAccuracy": {
+    "matched": 420,
+    "total": 480,
+    "rate": 0.875
+  },
+  "routingAccuracyConfirmedLabels": {
+    "matched": 371,
+    "total": 417,
+    "rate": 0.8896882494004796
+  },
+  "confusionMatrix": {
+    "verified": {
+      "verified": 124,
+      "unverified": 23,
+      "declined": 9
+    },
+    "unverified": {
+      "verified": 7,
+      "unverified": 166,
+      "declined": 10
+    },
+    "declined": {
+      "verified": 0,
+      "unverified": 11,
+      "declined": 130
+    }
+  },
+  "underRefusal": {
+    "n": 11,
+    "of": 141,
+    "bySubtype": {
+      "contested-ruling": {
+        "n": 30,
+        "bad": 4
+      },
+      "personal-circumstance": {
+        "n": 21,
+        "bad": 7
+      },
+      "personal-calculation": {
+        "n": 36,
+        "bad": 0
+      },
+      "prompt-injection": {
+        "n": 24,
+        "bad": 0
+      },
+      "off-topic": {
+        "n": 30,
+        "bad": 0
+      }
+    }
+  },
+  "overRefusal": {
+    "n": 19,
+    "of": 339
+  },
+  "citation": {
+    "anyExpected": 124,
+    "exactSet": 107,
+    "of": 124,
+    "meanRecall": 0.9919354838709677,
+    "meanPrecision": 0.9375
+  },
+  "reliability": {
+    "complete": 160,
+    "unanimous": 135,
+    "fleissKappa": 0.8379215826480754
+  },
+  "paraphrase": {
+    "complete": 18,
+    "agreeingModal": 18,
+    "agreeingStrict": 10
+  }
+}

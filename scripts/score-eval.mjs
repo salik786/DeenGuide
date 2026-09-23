@@ -38,8 +38,13 @@ if (!file || !existsSync(file)) {
 const bank = JSON.parse(readFileSync(path.join(evalDir, "question-bank.json"), "utf8"));
 const meta = new Map(bank.questions.map((q) => [q.id, q]));
 const all = readFileSync(file, "utf8").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l));
-const errored = all.filter((r) => r.error);
 const rows = all.filter((r) => !r.error && r.actualTier);
+// The results file is append-only, so a slot retried via --resume keeps its
+// original failed record alongside the successful one. Those are superseded,
+// not outstanding — counting them as errors would overstate the failure rate.
+const succeededSlots = new Set(rows.map((r) => `${r.sessionId}#${r.position}`));
+const errored = all.filter((r) => r.error && !succeededSlots.has(`${r.sessionId}#${r.position}`));
+const superseded = all.filter((r) => r.error && succeededSlots.has(`${r.sessionId}#${r.position}`));
 
 const runId = path.basename(file, ".jsonl");
 const questionsSeen = new Set(rows.map((r) => r.questionId));
@@ -48,7 +53,8 @@ const confirmed = rows.filter((r) => !meta.get(r.questionId)?.needsSheikhReview)
 console.log("=".repeat(66));
 console.log("DEEN GUIDE — EVALUATION SCORECARD");
 console.log(`${runId}  ·  ${rows.length} scored runs  ·  ${questionsSeen.size} unique questions`);
-if (errored.length) console.log(`${errored.length} run(s) errored and are excluded from all figures below`);
+if (superseded.length) console.log(`${superseded.length} earlier failure(s) were retried successfully and are superseded`);
+if (errored.length) console.log(`${errored.length} run(s) still unresolved and excluded from all figures below`);
 console.log("=".repeat(66));
 
 // --- 1. headline ----------------------------------------------------------
@@ -228,6 +234,7 @@ const summary = {
   runId,
   scoredRuns: rows.length,
   erroredRuns: errored.length,
+  supersededRetries: superseded.length,
   uniqueQuestions: questionsSeen.size,
   routingAccuracy: { matched, total: rows.length, rate: rows.length ? matched / rows.length : null },
   routingAccuracyConfirmedLabels: {
